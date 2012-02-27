@@ -1,5 +1,6 @@
 """Utilities to support git subcommands."""
 
+import inspect
 import os
 import shlex
 import subprocess
@@ -12,39 +13,132 @@ gflags.DEFINE_bool('dry_run', False, 'echo commands but do not execute them', sh
 FLAGS = gflags.FLAGS
 
 
-def run_command(command, env=None, shell=False, want_status=False):
+class Error(Exception):
+    """Base exception type."""
+
+
+class GitError(Error):
+    """Git exception type."""
+
+
+# Copied from subprocess.py of Python 2.7.
+class CalledProcessError(Exception):
+    """This exception is raised when a process run by check_call() or
+    check_output() returns a non-zero exit status.
+    The exit status will be stored in the returncode attribute;
+    check_output() will also store the output in the output attribute.
+    """
+    def __init__(self, returncode, cmd, output=None):
+        self.returncode = returncode
+        self.cmd = cmd
+        self.output = output
+    def __str__(self):
+        return "Command '%s' returned non-zero exit status %d" % (self.cmd, self.returncode)
+
+
+# Copied from subprocess.py of Python 2.7.
+def check_output(*popenargs, **kwargs):
+    r"""Run command with arguments and return its output as a byte string.
+
+    If the exit code was non-zero it raises a CalledProcessError.  The
+    CalledProcessError object will have the return code in the returncode
+    attribute and output in the output attribute.
+
+    The arguments are the same as for the Popen constructor.  Example:
+
+    >>> check_output(["ls", "-l", "/dev/null"])
+    'crw-rw-rw- 1 root root 1, 3 Oct 18  2007 /dev/null\n'
+
+    The stdout argument is not allowed as it is used internally.
+    To capture standard error in the result, use stderr=STDOUT.
+
+    >>> check_output(["/bin/sh", "-c",
+    ...               "ls -l non_existent_file ; exit 0"],
+    ...              stderr=STDOUT)
+    'ls: non_existent_file: No such file or directory\n'
+    """
+    if 'stdout' in kwargs:
+        raise ValueError('stdout argument not allowed, it will be overridden.')
+    process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, **kwargs)
+    output, unused_err = process.communicate()
+    retcode = process.poll()
+    if retcode:
+        cmd = kwargs.get("args")
+        if cmd is None:
+            cmd = popenargs[0]
+        raise CalledProcessError(retcode, cmd, output=output)
+    return output
+
+
+def run_command(command, env=None):
     """Runs the given command.
 
     Args:
         command: A string representing the command to run.
         env: A dictionary representing command's environment. Note
+            that these are added to the parent process's environment.
+
+    Returns:
+        A string representing command's output. Note that stdout and
+        stderr are combined.
+
+    Raises:
+        CalledProcessError: The command exited with a non-zero status.
+    """
+    if FLAGS.dry_run:
+        print 'run_command >>> %s' % command
+        return 'dry-run-no-output'
+
+    new_env = os.environ.copy()
+    if env is not None:
+        new_env.update(env)
+
+    command_list = shlex.split(command)
+
+    try:
+        return check_output(command_list, stderr=subprocess.STDOUT, env=new_env).strip()
+    except CalledProcessError, e:
+        print 'Error running "%s"' % e.cmd
+        print '  return code: %s' % e.returncode
+        print '  output: %s' % e.output
+        raise
+
+
+def run_command_shell(command, env=None):
+    """Runs the given command.
+
+    Normally, run_command should be used. Use run_command_shell if
+    command needs to interact with the user, like with 'git commit'
+    which invokes an editor for making changes to the commit mesage.
+
+    Args:
+        command: A string representing the command to run.
+        env: A dictionary representing command's environment. Note
             that these are applied to the parent process's environment.
-        shell: If True, command is run in a subshell. If False
             (default) command is run using os.execvp().
 
     Returns:
-        A tuple consisting of the return code and command's
-        stdout. Note that with shell=True, stdout is None.
+        A string representing command's stderr. Commands' stdout will
+        be sent to the parent process's stdout.
+
+    Raises:
+        CalledProcessError: The command exited with a non-zero status.
     """
     if FLAGS.dry_run:
-        print 'dry_run>>> %s' % command
-        return None
-    if env is None:
-        env = {}
+        print 'run_command_shell >>> %s' % command
+        return 'dry-run-no-output'
+
     new_env = os.environ.copy()
-    new_env.update(env)
-    if shell:
-        process = subprocess.Popen(command, shell=True, env=new_env)
-        stdout, stderr = process.communicate()
-    else:
-        process = subprocess.Popen(command_list, stdout=subprocess.PIPE,
-                                   stderr=subprocess.STDOUT, env=new_env)
-        stdout, stderr = process.communicate()
-        stdout = stdout.strip()
-    if want_status:
-        return process.returncode, stdout
-    else:
-        return stdout
+    if env is not None:
+        new_env.update(env)
+
+    process = subprocess.Popen(command, shell=True, env=new_env,
+                               stderr=subprocess.PIPE)
+    _, stderr = process.communicate()
+    status = process.poll()
+    if status:
+        raise CalledProcessError(status, command, output=stderr)
+    return stderr
 
 
 def get_branch():
@@ -52,12 +146,18 @@ def get_branch():
 
     Returns:
         The name of the current branch as a string.
+
+    Raises:
+        GitError: a valid branch name could not be read.
     """
+    if FLAGS.dry_run:
+        return 'fake-branch'
     output = run_command('git symbolic-ref HEAD')
-    if output is None:
-        return None
+    parts = output.split('/')
+    if len(parts) == 3:
+        return parts[2]
     else:
-        return output.split('/')[2]
+        raise GitError('Could not get a branch name from "%s"' % output)
 
 
 def app(argv):
@@ -84,9 +184,14 @@ def app(argv):
         if __name__ == '__main__':
             git.app(sys.argv)
     """
+    main_module = sys.modules['__main__']
     try:
         argv = FLAGS(argv)  # parse flags
     except gflags.FlagsError, e:
-        print '%s\\nUsage: %s ARGS\\n%s' % (e, sys.argv[0], FLAGS)
+        if 'usage' in dir(main_module) and inspect.isfunction(main_module.usage):
+            main_module.usage()
+        else:
+            print '%s\\nUsage: %s ARGS\\n%s' % (e, sys.argv[0], FLAGS)
         sys.exit(1)
-    sys.modules['__main__'].main(argv)
+
+    main_module.main(argv)
