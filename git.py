@@ -1,5 +1,7 @@
 """Utilities to support git subcommands."""
 
+__author__ = 'jacob@nextdoor.com (Jacob Hesch)'
+
 import inspect
 import os
 import shlex
@@ -28,10 +30,12 @@ class CalledProcessError(Exception):
     The exit status will be stored in the returncode attribute;
     check_output() will also store the output in the output attribute.
     """
+
     def __init__(self, returncode, cmd, output=None):
         self.returncode = returncode
         self.cmd = cmd
         self.output = output
+
     def __str__(self):
         return "Command '%s' returned non-zero exit status %d" % (self.cmd, self.returncode)
 
@@ -191,7 +195,7 @@ def app(argv):
         if 'usage' in dir(main_module) and inspect.isfunction(main_module.usage):
             main_module.usage()
         else:
-            print '%s\\nUsage: %s ARGS\\n%s' % (e, sys.argv[0], FLAGS)
+            print '%s\nUsage: %s ARGS\n%s' % (e, sys.argv[0], FLAGS)
         sys.exit(1)
 
     main_module.main(argv)
