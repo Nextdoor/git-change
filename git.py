@@ -76,13 +76,15 @@ def check_output(*popenargs, **kwargs):
     return output
 
 
-def run_command(command, env=None):
+def run_command(command, env=None, output_on_error=True):
     """Runs the given command.
 
     Args:
         command: A string representing the command to run.
         env: A dictionary representing command's environment. Note
             that these are added to the parent process's environment.
+        output_on_error: A boolean to flag whether to print output if
+            an error running command occurs.
 
     Returns:
         A string representing command's output. Note that stdout and
@@ -104,9 +106,10 @@ def run_command(command, env=None):
     try:
         return check_output(command_list, stderr=subprocess.STDOUT, env=new_env).strip()
     except CalledProcessError, e:
-        print 'Error running "%s"' % e.cmd
-        print '  return code: %s' % e.returncode
-        print '  output: %s' % e.output
+        if output_on_error:
+            print 'Error running "%s"' % e.cmd
+            print '  return code: %s' % e.returncode
+            print '  output: %s' % e.output
         raise
 
 
