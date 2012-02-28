@@ -10,6 +10,8 @@ import sys
 
 import gflags
 
+gflags.DEFINE_string('remote', 'origin', 'name of the git remote repository')
+
 gflags.DEFINE_bool('dry_run', False, 'echo commands but do not execute them', short_name='n')
 
 FLAGS = gflags.FLAGS

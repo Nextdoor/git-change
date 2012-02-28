@@ -34,7 +34,6 @@ gflags.DEFINE_string('bug', None, 'bug number', short_name='b')
 gflags.DEFINE_string('message', None, 'commit message', short_name='m')
 gflags.DEFINE_string('topic', None, 'topic')
 
-gflags.DEFINE_string('remote', 'origin', 'name of the git remote repository')
 gflags.DEFINE_bool('fetch', False, 'whether to run git fetch so that remote branch is in sync')
 
 FLAGS = gflags.FLAGS
@@ -145,7 +144,7 @@ def main(argv):
     # Fetch from origin so that we can see how many commits ahead our
     # local branch is.
     if FLAGS.fetch:
-        output = git.run_command('git fetch origin')
+        output = git.run_command('git fetch %s' % FLAGS.remote)
         if output:
             print output
 
