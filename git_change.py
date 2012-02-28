@@ -33,10 +33,29 @@ gflags.DEFINE_list('cc', list(), 'comma separated list of people to cc')
 gflags.DEFINE_string('bug', None, 'bug number', short_name='b')
 gflags.DEFINE_string('message', None, 'commit message', short_name='m')
 gflags.DEFINE_string('topic', None, 'topic')
-
 gflags.DEFINE_bool('fetch', False, 'whether to run git fetch so that remote branch is in sync')
+gflags.DEFINE_bool('update', False, 'update an existing change')
 
 FLAGS = gflags.FLAGS
+
+
+def get_change_id_from_branch():
+    """Returns the change ID embedded in the current branch name.
+
+    Assumes the current branch is a temporary change branch created by
+    a previous run of git-change. Example branch name:
+    'change-Id06774ede265426f85d36cca50bba69d8aa54ed8'.
+
+    Returns:
+        A string representing the change ID embedded in the current
+        branch name, or None if the current branch is not a temporary
+        change branch.
+    """
+    branch = git.get_branch()
+    if branch.startswith('change-I'):
+        _, change_id = branch.split('-')
+        return change_id
+    return None
 
 
 def get_change_id_from_head():
@@ -48,7 +67,7 @@ def get_change_id_from_head():
 
     Returns:
         A string representing the HEAD commit's change ID if it is
-        available or None if not.
+        available, or None if not.
     """
     output = git.run_command('git cat-file -p HEAD')
     lines = output.split('\n')
@@ -57,6 +76,33 @@ def get_change_id_from_head():
             _, change_id = line.split(':')
             return change_id.strip()
     return None
+
+
+def build_push_command(branch):
+    """Builds a git push command string for pushing a Gerrit change.
+
+    The command is built using the given branch and flag values to
+    populate remote repository, reviewers, users to CC, etc.
+
+    Args:
+        branch: A string representing the branch to which to push.
+
+    Returns:
+        The git push command as a string.
+    """
+    command = 'git push %s' % FLAGS.remote
+    receive_pack_args = []
+    for reviewer in FLAGS.reviewers:
+        receive_pack_args.append('--reviewer=%s' % reviewer)
+    for cc in FLAGS.cc:
+        receive_pack_args.append('--cc=%s' % cc)
+    if receive_pack_args:
+        command = '%s --receive-pack="git receive-pack %s"' % (
+            command, ' '.join(receive_pack_args))
+    command = '%s HEAD:refs/for/%s' % (command, branch)
+    if FLAGS.topic:
+        command = '%s/%s' % (command, FLAGS.topic)
+    return command
 
 
 def check_unmerged_commits(branch):
@@ -89,6 +135,29 @@ def check_unmerged_commits(branch):
     return True
 
 
+def update_change():
+    """Updates an existing change with Gerrit.
+
+    Runs a git push command to update an existing change. The change
+    ID is taken from the current branch, which should be a temporary
+    change branch created by a previous run of git-change.
+    """
+    change_id = get_change_id_from_branch()
+    if change_id is None:
+        print ('Error: The current branch must be a change branch, '
+               'usually previously created by git-change.')
+        sys.exit(1)
+    results, _ = git.search_gerrit('change:%s' % change_id)
+    if len(results) != 1:
+        print 'Error: Got multiple results searching Gerrit for %s' % change_id
+        sys.exit(1)
+    change = results[0]
+    if not change['open']:
+        print 'Error: Change %s is no longer open'
+        sys.exit(1)
+    print build_push_command(change['branch'])
+
+
 def commit_change():
     """Commits the staged change.
 
@@ -107,34 +176,11 @@ def commit_change():
     git.run_command_shell(command, env=env)
 
 
-def build_push_command(branch):
-    """Builds a git push command string for pushing a Gerrit change.
-
-    The command is built using the given branch and flag values to
-    populate remote repository, reviewers, users to CC, etc.
-
-    Args:
-        branch: A string representing the branch to which to push.
-
-    Returns:
-        The git push command as a string.
-    """
-    command = 'git push %s' % FLAGS.remote
-    receive_pack_args = []
-    for reviewer in FLAGS.reviewers:
-        receive_pack_args.append('--reviewer=%s' % reviewer)
-    for cc in FLAGS.cc:
-        receive_pack_args.append('--cc=%s' % cc)
-    if receive_pack_args:
-        command = '%s --receive-pack="git receive-pack %s"' % (
-            command, ' '.join(receive_pack_args))
-    command = '%s HEAD:refs/for/%s' % (command, branch)
-    if FLAGS.topic:
-        command = '%s/%s' % (command, FLAGS.topic)
-    return command
-
-
 def main(argv):
+    if FLAGS.update:
+        update_change()
+        sys.exit(0)
+
     if not git.run_command('git diff --cached --name-status'):
         print 'You have no staged changes; exiting'
         sys.exit(1)
