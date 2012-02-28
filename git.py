@@ -5,6 +5,7 @@ __author__ = 'jacob@nextdoor.com (Jacob Hesch)'
 import inspect
 import os
 import shlex
+import simplejson
 import subprocess
 import sys
 
