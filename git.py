@@ -169,6 +169,47 @@ def get_branch():
         raise GitError('Could not get a branch name from "%s"' % output)
 
 
+def search_gerrit(query):
+    """Searches Gerrit with the given query.
+
+    Runs the search and parses the JSON response into python objects.
+
+    Args:
+        query: A string representing the Gerrit search query.
+
+    Returns:
+        A tuple (results, stats) where results is a sequence of
+        dictionaries each representing a query result, and stats is a
+        dictionaries describing the results. Here is an example for
+        the query [I661e6]:
+
+        ([{'branch': 'master',
+           'createdOn': 1330051281,
+           'id': 'I661e66ee89a862de1f0c03c097b8d57302cade03',
+           'lastUpdated': 1330051281,
+           'number': '45',
+           'open': True,
+           'owner': {'email': 'jacob@nextdoor.com', 'name': 'Jacob Hesch'},
+           'project': 'nextdoor.com',
+           'sortKey': '001b45410000002d',
+           'status': 'NEW',
+           'subject': 'Okeydokey',
+           'trackingIds': [{'id': '442', 'system': 'Bugzilla'}],
+           'url': 'http://review.nextdoortest.com/45'}],
+         {'rowCount': 1, 'runTimeMilliseconds': 10, 'type': 'stats'})
+    """
+    results = []
+    stats = None
+    response = run_command('ssh review gerrit query --format=JSON %s' % query)
+    for line in response.split('\n'):
+        result = simplejson.loads(line)
+        if 'type' in result and result['type'] == 'stats':
+            stats = result
+        else:
+            results.append(result)
+    return results, stats
+
+
 def app(argv):
     """Bootstraps a command line app.
 
