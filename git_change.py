@@ -108,15 +108,20 @@ def build_push_command(branch):
 def check_unmerged_commits(branch):
     """Checks whether the given branch has unmerged commits.
 
+    Specifically, checks whether the given branch has unmerged commits
+    relative to its remote branch. For example, assuming the branch is
+    'master' and the remote is 'origin', checks whether 'master' has
+    commits that have not been merged into 'origin/master'.
+
     Args:
-        branch: A strings representing a local tracking branch.
+        branch: A string representing the branch to check.
 
     Returns:
-        True if the given local tracking branch has commits not yet
-        merged in its remote branch. False if not, or if the user
-        elected to proceed anyway.
+        True if the given branch has commits not yet merged in its
+        remote branch. False if not, or if the user elected to proceed
+        anyway.
     """
-    output = git.run_command('git log --oneline %s ^origin/%s' % (branch, branch))
+    output = git.run_command('git log --oneline %s ^%s/%s' % (branch, FLAGS.remote, branch))
     if not output or FLAGS.dry_run:
         return False
 
