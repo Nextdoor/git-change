@@ -168,7 +168,7 @@ def main(argv):
     else:
         new_branch = 'change-%s' % change_id
         git.run_command('git branch -m %s %s' % (tmp_branch, new_branch))
-    print 'Created branch %s' % new_branch
+    print '\nCreated branch: %s\n' % new_branch
 
     output = git.run_command(build_push_command(original_branch))
     print output
