@@ -49,9 +49,9 @@ def main(argv):
             print '\nDeleted branch %s\n' % branch
 
     if errors:
-        print ('Some branches could not be deleted, probably '
-               'because they are not fully merged.\n'
-               'You might try passing --pull to sync.')
+        print ('Some branches could not be deleted, probably because they '
+               'are not fully merged into the current branch.\n'
+               'You might try again with the --pull flag in order to sync.')
 
 
 if __name__ == '__main__':
