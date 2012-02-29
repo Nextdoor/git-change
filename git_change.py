@@ -169,10 +169,14 @@ def update_change():
 def commit_change():
     """Commits the staged change.
 
-    Runs git commit to commit the staged change. If a bug number was
+    Runs 'git commit' to commit the staged change. If a bug number was
     specified in a flag, sets the ND_BUG_ID environment variable so
     the prepare-commit-msg hook can inject the bug ID into the commit
     message.
+
+    Raises:
+        git.CalledProcessError: 'git commit' exited with a non-zero
+            status.
     """
     if FLAGS.bug is None:
         env = None
@@ -214,7 +218,15 @@ def main(argv):
 
     # Commit the change. A change ID will be generated as a
     # side-effect.
-    commit_change()
+    try:
+        commit_change()
+    except git.CalledProcessError, e:
+        # git-commit returned non-zero status. Maybe the user provided
+        # an empty commit message.
+        git.run_command('git checkout %s' % original_branch)
+        git.run_command('git branch -d %s' % tmp_branch)
+        print e.output.strip()
+        sys.exit(e.returncode)
 
     # Now rename the branch according to the change ID.
     change_id = get_change_id_from_head()
