@@ -177,7 +177,7 @@ def commit_change():
         env = {'ND_BUG_ID': FLAGS.bug}
     command = 'git commit'
     if FLAGS.message is not None:
-        command = '%s -m %s' % (command, FLAGS.message)
+        command = '%s -m "%s"' % (command, FLAGS.message)
     git.run_command_shell(command, env=env)
 
 
