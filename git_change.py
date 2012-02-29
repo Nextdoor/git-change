@@ -1,4 +1,4 @@
-#!/usr/bin/python2.6
+#!/usr/bin/env python
 
 """Git subcommand which creates a Gerrit change.
 
