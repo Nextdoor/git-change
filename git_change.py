@@ -199,6 +199,10 @@ def main(argv):
 
     if FLAGS.branch is None:
         original_branch = git.get_branch()
+        if original_branch.startswith('change-I'):
+            print ('Error: You are in a temporary change branch. '
+                   'Please specify target branch with --branch.')
+            sys.exit(1)
     else:
         original_branch = FLAGS.branch
 
