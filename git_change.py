@@ -160,7 +160,8 @@ def update_change():
     if not change['open']:
         print 'Error: Change %s is no longer open'
         sys.exit(1)
-    print build_push_command(change['branch'])
+    command = build_push_command(change['branch'])
+    print git.run_command(command)
 
 
 def commit_change():
