@@ -38,20 +38,21 @@ def main(argv):
         if output:
             print output
 
-    errors = False
+    unmerged_branches = []
     for branch in get_temp_branches():
         try:
             git.run_command('git branch -d %s' % branch, output_on_error=False)
         except git.CalledProcessError, e:
-            print e.output
-            errors = True
+            unmerged_branches.append(branch)
         else:
             print '\nDeleted branch %s\n' % branch
 
-    if errors:
-        print ('Some branches could not be deleted, probably because they '
-               'are not fully merged into the current branch.\n'
-               'You might try again with the --pull flag in order to sync.')
+    if unmerged_branches:
+        print ('The following change branches could not be deleted, probably because they\n'
+               'are not fully merged into the current branch. You might try again with\n'
+               'the --pull flag in order to sync with remote.\n')
+        for branch in unmerged_branches:
+            print branch
 
 
 if __name__ == '__main__':
