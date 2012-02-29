@@ -35,6 +35,8 @@ gflags.DEFINE_string('message', None, 'commit message', short_name='m')
 gflags.DEFINE_string('topic', None, 'topic')
 gflags.DEFINE_bool('fetch', False, 'whether to run git fetch so that remote branch is in sync')
 gflags.DEFINE_bool('update', False, 'update an existing change')
+gflags.DEFINE_string('branch', None, 'the branch to which to commit your change '
+                     '(defaults to the current branch)')
 
 FLAGS = gflags.FLAGS
 
@@ -191,7 +193,10 @@ def main(argv):
         print 'You have no staged changes; exiting'
         sys.exit(1)
 
-    original_branch = git.get_branch()
+    if FLAGS.branch is None:
+        original_branch = git.get_branch()
+    else:
+        original_branch = FLAGS.branch
 
     # Fetch from origin so that we can see how many commits ahead our
     # local branch is.
@@ -222,10 +227,14 @@ def main(argv):
         git.run_command('git branch -m %s %s' % (tmp_branch, new_branch))
     print '\nCreated branch: %s\n' % new_branch
 
-    output = git.run_command(build_push_command(original_branch))
-    print output
+    command = build_push_command(original_branch)
+    print git.run_command(command)
 
-    git.run_command('git checkout %s' % original_branch)
+    # Switch back to the original branch, but not if the user provided
+    # it via --branch as he may be making multiple commits in the
+    # temporary change branch, for example.
+    if FLAGS.branch is None:
+        git.run_command('git checkout %s' % original_branch)
 
 
 if __name__ == '__main__':
