@@ -144,6 +144,30 @@ def check_unmerged_commits(branch):
     return True
 
 
+def get_change(change_id):
+    """Returns the Gerrit change object for the given change ID.
+
+    Queries Gerrit for the change_id and returns a Python object
+    created from the JSON search result.
+
+    This function exits with a non-zero status if the Gerrit search
+    returns multiple results for change_id.
+
+    Args:
+        change_id: A string representing the ID of the desired change.
+
+    Returns:
+        A Python object representation of the Gerrit query JSON
+        response. See git.search_gerrit and http://goo.gl/VMJih for
+        the JSON data format.
+    """
+    results, _ = git.search_gerrit('change:%s' % change_id)
+    if len(results) != 1:
+        print 'Error: Got multiple results searching Gerrit for %s' % change_id
+        sys.exit(1)
+    return results[0]
+
+
 def update_change():
     """Updates an existing change with Gerrit.
 
@@ -165,11 +189,7 @@ def update_change():
                'does not match the change ID embedded in the branch name (%s).' %
                (head_change_id, change_id))
         sys.exit(1)
-    results, _ = git.search_gerrit('change:%s' % change_id)
-    if len(results) != 1:
-        print 'Error: Got multiple results searching Gerrit for %s' % change_id
-        sys.exit(1)
-    change = results[0]
+    change = get_change(change_id)
     if not change['open']:
         print 'Error: Change %s is no longer open'
         sys.exit(1)
