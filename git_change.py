@@ -228,7 +228,8 @@ def main(argv):
     if check_unmerged_commits(original_branch):
         sys.exit(1)
 
-    # Create a temporary branch until we have a change ID.
+    # Create and switch to a temporary branch. Once we have a change
+    # ID, it will be renamed.
     tmp_branch = 'tmp-change-%s' % time.time()
     git.run_command('git checkout -b %s' % tmp_branch)
 
