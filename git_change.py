@@ -173,6 +173,7 @@ def update_change():
     if not change['open']:
         print 'Error: Change %s is no longer open'
         sys.exit(1)
+    git.run_command_shell('git commit --amend')
     command = build_push_command(change['branch'])
     print git.run_command(command)
 
@@ -200,13 +201,13 @@ def commit_change():
 
 
 def main(argv):
-    if FLAGS.update:
-        update_change()
-        sys.exit(0)
-
     if not git.run_command('git diff --cached --name-status'):
         print 'You have no staged changes; exiting'
         sys.exit(1)
+
+    if FLAGS.update:
+        update_change()
+        sys.exit(0)
 
     if FLAGS.branch is None:
         original_branch = git.get_branch()
