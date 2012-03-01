@@ -156,6 +156,15 @@ def update_change():
         print ('Error: The current branch must be a change branch, '
                'usually previously created by git-change.')
         sys.exit(1)
+    head_change_id = get_change_id_from_head()
+    if head_change_id is None:
+        print ('Error: The commit message at HEAD does not contain a valid change ID header.')
+        sys.exit(1)
+    elif head_change_id != change_id:
+        print ('Error: The change ID in the commit message at HEAD (%s)\n'
+               'does not match the change ID embedded in the branch name (%s).' %
+               (head_change_id, change_id))
+        sys.exit(1)
     results, _ = git.search_gerrit('change:%s' % change_id)
     if len(results) != 1:
         print 'Error: Got multiple results searching Gerrit for %s' % change_id
