@@ -28,15 +28,17 @@ import gflags
 
 import git
 
-gflags.DEFINE_list('reviewers', list(), 'comma separated list of reviewers', short_name='r')
-gflags.DEFINE_list('cc', list(), 'comma separated list of people to cc')
-gflags.DEFINE_string('bug', None, 'bug number', short_name='b')
-gflags.DEFINE_string('message', None, 'commit message', short_name='m')
-gflags.DEFINE_string('topic', None, 'topic')
-gflags.DEFINE_bool('fetch', False, 'whether to run git fetch so that remote branch is in sync')
-gflags.DEFINE_bool('update', False, 'update an existing change')
-gflags.DEFINE_string('branch', None, 'the branch to which to commit your change '
-                     '(defaults to the current branch)')
+gflags.DEFINE_list('reviewers', list(), 'Comma separated list of reviewers.', short_name='r')
+gflags.DEFINE_list('cc', list(),
+                   'Comma separated list of people to copy on change notification mails.')
+gflags.DEFINE_string('bug', None, 'Bug ID to include in a commit message header', short_name='b')
+gflags.DEFINE_string('message', None,
+                     'Use the given message as the commit message.', short_name='m')
+gflags.DEFINE_string('topic', None, 'Tag the change with the given topic name.')
+gflags.DEFINE_bool('fetch', False, 'Whether to run git fetch so that remote branch is in sync.')
+gflags.DEFINE_bool('update', False, 'Update an existing change with a new patch set.')
+gflags.DEFINE_string('branch', None, 'The target branch to which to commit your change '
+                     '(defaults to the current branch).')
 
 FLAGS = gflags.FLAGS
 

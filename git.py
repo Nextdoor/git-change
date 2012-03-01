@@ -11,9 +11,10 @@ import sys
 
 import gflags
 
-gflags.DEFINE_string('remote', 'origin', 'name of the git remote repository')
+gflags.DEFINE_string('remote', 'origin',
+                     'Name of the remote repository to fetch from and push to.')
 
-gflags.DEFINE_bool('dry_run', False, 'echo commands but do not execute them', short_name='n')
+gflags.DEFINE_bool('dry_run', False, 'Echo commands but do not execute them.', short_name='n')
 
 FLAGS = gflags.FLAGS
 

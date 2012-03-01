@@ -15,7 +15,7 @@ import gflags
 
 import git
 
-gflags.DEFINE_bool('pull', False, 'whether to run git pull')
+gflags.DEFINE_bool('pull', False, 'Run git-pull prior to sweeping change branches.')
 
 FLAGS = gflags.FLAGS
 
