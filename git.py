@@ -174,7 +174,11 @@ def get_branch():
 def search_gerrit(query):
     """Searches Gerrit with the given query.
 
-    Runs the search and parses the JSON response into python objects.
+    Runs the search and parses the JSON response into python
+    objects.
+
+    See http://goo.gl/oC6mW for search operators and
+    http://goo.gl/VMJih for data formats.
 
     Args:
         query: A string representing the Gerrit search query.
@@ -183,7 +187,7 @@ def search_gerrit(query):
         A tuple (results, stats) where results is a sequence of
         dictionaries each representing a query result, and stats is a
         dictionaries describing the results. Here is an example for
-        the query [I661e6]:
+        the query [change:I661e6]:
 
         ([{'branch': 'master',
            'createdOn': 1330051281,
