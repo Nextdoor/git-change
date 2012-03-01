@@ -28,8 +28,12 @@ def get_temp_branches():
     Returns:
         A sequence of strings each representing a branch names.
     """
-    return git.run_command(
-        'git for-each-ref --format="%(refname:short)" refs/heads/change-*').split('\n')
+    output = git.run_command(
+        'git for-each-ref --format="%(refname:short)" refs/heads/change-*')
+    if output:
+        return output.split('\n')
+    else:
+        return []
 
 
 def main(argv):
