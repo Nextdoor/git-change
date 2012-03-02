@@ -49,6 +49,19 @@ gflags.DEFINE_bool('update', False,
 FLAGS = gflags.FLAGS
 
 
+def exit_error(message, prefix='Error: ', status=1):
+    """Prints the given message and exits the process.
+
+    Args:
+        message: A string representing the error message to
+            print. 'Error: ' will be prepended to message.
+        prefix: A string to prepend to message
+        stautus: An integer representing the exit status code.
+    """
+    print '%s%s' % (prefix, message)
+    sys.exit(status)
+
+
 def get_change_id_from_branch():
     """Returns the change ID embedded in the current branch name.
 
@@ -169,8 +182,7 @@ def get_change(change_id):
     """
     results, _ = git.search_gerrit('change:%s' % change_id)
     if len(results) != 1:
-        print 'Error: Got multiple results searching Gerrit for %s' % change_id
-        sys.exit(1)
+        exit_error('Got multiple results searching Gerrit for %s' % change_id)
     return results[0]
 
 
@@ -183,22 +195,18 @@ def update_change():
     """
     change_id = get_change_id_from_branch()
     if change_id is None:
-        print ('Error: The current branch must be a change branch, '
-               'usually previously created by git-change.')
-        sys.exit(1)
+        exit_error('The current branch must be a change branch, '
+                   'usually previously created by git-change.')
     head_change_id = get_change_id_from_head()
     if head_change_id is None:
-        print ('Error: The commit message at HEAD does not contain a valid change ID header.')
-        sys.exit(1)
+        exit_error('The commit message at HEAD does not contain a valid change ID header.')
     elif head_change_id != change_id:
-        print ('Error: The change ID in the commit message at HEAD (%s)\n'
-               'does not match the change ID embedded in the branch name (%s).' %
-               (head_change_id, change_id))
-        sys.exit(1)
+        exit_error('The change ID in the commit message at HEAD (%s)\n'
+                   'does not match the change ID embedded in the branch name (%s).' %
+                   (head_change_id, change_id))
     change = get_change(change_id)
     if not change['open']:
-        print 'Error: Change %s is no longer open'
-        sys.exit(1)
+        exit_error('Change %s is no longer open.')
 
     # If there are staged changes commit them, amending the HEAD
     # commit.
@@ -253,16 +261,13 @@ def determine_branches():
         # which we're chaining.
         previous_change_id = get_change_id_from_branch()
         if previous_change_id is None:
-            print ('Error: The current branch must be a change branch '
-                   'when you specify --chain.')
-            sys.exit(1)
+            exit_error('The current branch must be a change branch when you specify --chain.')
         previous_change = get_change(previous_change_id)
         target_branch = previous_change['branch']
     else:
         if original_branch.startswith('change-I'):
-            print ('Error: You are in a temporary change branch. '
-                   'If you wish to chain commits, pass --chain.')
-            sys.exit(1)
+            exit_error('You are in a temporary change branch. '
+                       'If you wish to chain commits, pass --chain.')
         target_branch = original_branch
 
     return original_branch, target_branch
@@ -274,8 +279,7 @@ def main(argv):
         sys.exit(0)
 
     if not git.run_command('git diff --cached --name-status'):
-        print 'You have no staged changes; exiting'
-        sys.exit(1)
+        exit_error('You have no staged changes; exiting', prefix='')
 
     original_branch, target_branch = determine_branches()
 
