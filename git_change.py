@@ -42,6 +42,9 @@ gflags.DEFINE_bool('chain', False,
                    'Chain with the previous Gerrit change. Use when this change depends on '
                    'the previous one. Current branch must be a temporary change branch. '
                    'Implies --switch.')
+gflags.DEFINE_bool('commit', False,
+                   'Commit the staged changes before updating. Only relevent when combined '
+                   'with --update.')
 
 FLAGS = gflags.FLAGS
 
@@ -197,7 +200,8 @@ def update_change():
         print 'Error: Change %s is no longer open'
         sys.exit(1)
     git.run_command_shell('git commit --amend')
-    command = build_push_command(change['branch'])
+    if FLAGS.commit:
+        command = build_push_command(change['branch'])
     print git.run_command(command)
 
 
