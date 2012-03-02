@@ -30,18 +30,21 @@ import git
 
 gflags.DEFINE_list('reviewers', list(), 'Comma separated list of reviewers.', short_name='r')
 gflags.DEFINE_list('cc', list(),
-                   'Comma separated list of people to copy on change notification mails.')
-gflags.DEFINE_string('bug', None, 'Bug ID to include in a commit message header', short_name='b')
-gflags.DEFINE_string('message', None,
-                     'Use the given message as the commit message.', short_name='m')
+                   'Comma separated list of addresses to copy on change notification mails.')
+gflags.DEFINE_string('bug', None, 'Bug ID to include in the commit message header', short_name='b')
+gflags.DEFINE_string('message', None, 'Use the given message as the commit message.',
+                     short_name='m')
 gflags.DEFINE_string('topic', None, 'Tag the change with the given topic name.')
-gflags.DEFINE_bool('fetch', False, 'Whether to run git fetch so that remote branch is in sync.')
-gflags.DEFINE_bool('update', False, 'Update an existing change with a new patch set.')
+gflags.DEFINE_bool('fetch', False,
+                   'Run git-fetch so that remote branch is in sync with the central repository.')
 gflags.DEFINE_bool('switch', False, 'Switch to the temporary change branch after creating it.')
 gflags.DEFINE_bool('chain', False,
                    'Chain with the previous Gerrit change. Use when this change depends on '
                    'the previous one. Current branch must be a temporary change branch. '
                    'Implies --switch.')
+
+gflags.DEFINE_bool('update', False,
+                   'Update an existing change with a new patch set. All other flags are ignored.')
 
 FLAGS = gflags.FLAGS
 
