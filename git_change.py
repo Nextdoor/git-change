@@ -42,6 +42,8 @@ gflags.DEFINE_bool('chain', False,
                    'Chain with the previous Gerrit change. Use when this change depends on '
                    'the previous one. Current branch must be a temporary change branch. '
                    'Implies --switch.')
+gflags.DEFINE_bool('fake_push', False,
+                   'Do everything except for actually pushing the change to Gerrit.')
 
 gflags.DEFINE_bool('update', False,
                    'Update an existing change with a new patch set. All other flags are ignored.')
@@ -125,6 +127,9 @@ def build_push_command(branch):
     command = '%s HEAD:refs/for/%s' % (command, branch)
     if FLAGS.topic:
         command = '%s/%s' % (command, FLAGS.topic)
+    if FLAGS.fake_push:
+        print 'Fake pushing'
+        command = 'echo %s' % command
     return command
 
 
