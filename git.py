@@ -122,6 +122,9 @@ def run_command_shell(command, env=None):
     command needs to interact with the user, like with 'git commit'
     which invokes an editor for making changes to the commit mesage.
 
+    The command's stdout and stderr use the corresponding file handles
+    of the calling process.
+
     Args:
         command: A string representing the command to run.
         env: A dictionary representing command's environment. Note
@@ -143,13 +146,11 @@ def run_command_shell(command, env=None):
     if env is not None:
         new_env.update(env)
 
-    process = subprocess.Popen(command, shell=True, env=new_env,
-                               stderr=subprocess.PIPE)
-    _, stderr = process.communicate()
+    process = subprocess.Popen(command, shell=True, env=new_env)
+    process.communicate()
     status = process.poll()
     if status:
-        raise CalledProcessError(status, command, output=stderr)
-    return stderr
+        raise CalledProcessError(status, command)
 
 
 def get_branch():

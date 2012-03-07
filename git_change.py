@@ -311,7 +311,6 @@ def main(argv):
         # an empty commit message.
         git.run_command('git checkout %s' % original_branch)
         git.run_command('git branch -d %s' % tmp_branch)
-        print e.output.strip()
         sys.exit(e.returncode)
 
     # Now rename the branch according to the change ID.
