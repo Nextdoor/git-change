@@ -306,6 +306,11 @@ def main(argv):
     # commit-msg hook as a side-effect.
     try:
         commit_change()
+    except KeyboardInterrupt:
+        # The user bailed with Control-C.
+        git.run_command('git checkout %s' % original_branch)
+        git.run_command('git branch -d %s' % tmp_branch)
+        sys.exit(1)
     except git.CalledProcessError, e:
         # git-commit returned non-zero status. Maybe the user provided
         # an empty commit message.
