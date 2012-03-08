@@ -223,8 +223,8 @@ def search_gerrit(query):
     Returns:
         A tuple (results, stats) where results is a sequence of
         dictionaries each representing a query result, and stats is a
-        dictionaries describing the results. Here is an example for
-        the query [change:I661e6]:
+        dictionary describing the results. Here is an example for the
+        query [change:I661e6]:
 
         ([{'branch': 'master',
            'createdOn': 1330051281,
