@@ -78,6 +78,42 @@ def check_output(*popenargs, **kwargs):
     return output
 
 
+def check_output_separate(*popenargs, **kwargs):
+    """Runs command with arguments and returns its stdout output.
+
+    Like subprocess.check_output, but separates stdout and stderr.
+    Note: check_output was added to subprocess as of Python 2.7.
+
+    Returns stdout, unless the command exits with a non-zero
+    status. If command exits with a non-zero status, a
+    CalledProcessError exception is raised with command's stderr set
+    in its 'output' property.
+
+    Args:
+        Same as subprocess.Popen, except stdout and stderr cannot be
+        provided as they would be overridden.
+
+    Returns:
+        A string representing the command's stdout.
+
+    Raises:
+        CalledProcessError: The command exited with a non-zero
+            status. Its stderr output is attached to the exception
+            object's 'output' property.
+    """
+    if 'stdout' in kwargs or 'stderr' in kwargs:
+        raise ValueError('stdout and stderr not allowed; they will be overridden.')
+    process = subprocess.Popen(stdout=subprocess.PIPE, stderr=subprocess.PIPE, *popenargs, **kwargs)
+    stdout, stderr = process.communicate()
+    return_code = process.poll()
+    if return_code:
+        command = kwargs.get('args')
+        if command is None:
+            command = popenargs[0]
+        raise CalledProcessError(return_code, command, output=stderr)
+    return stdout
+
+
 def run_command(command, env=None, output_on_error=True):
     """Runs the given command.
 
@@ -106,7 +142,7 @@ def run_command(command, env=None, output_on_error=True):
     command_list = shlex.split(command)
 
     try:
-        return check_output(command_list, stderr=subprocess.STDOUT, env=new_env).strip()
+        return check_output_separate(command_list, env=new_env)
     except CalledProcessError, e:
         if output_on_error:
             print 'Error running "%s"' % e.cmd
@@ -209,6 +245,8 @@ def search_gerrit(query):
     stats = None
     response = run_command('ssh review gerrit query --format=JSON %s' % query)
     for line in response.split('\n'):
+        if not line:
+            continue
         result = simplejson.loads(line)
         if 'type' in result and result['type'] == 'stats':
             stats = result
