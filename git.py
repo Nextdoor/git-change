@@ -142,7 +142,7 @@ def run_command(command, env=None, output_on_error=True):
     command_list = shlex.split(command)
 
     try:
-        return check_output_separate(command_list, env=new_env)
+        return check_output_separate(command_list, env=new_env).strip()
     except CalledProcessError, e:
         if output_on_error:
             print 'Error running "%s"' % e.cmd
