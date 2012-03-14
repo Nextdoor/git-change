@@ -76,9 +76,9 @@ import git
 # other git commands.
 gflags.DEFINE_bool('help_summary', False, 'Show a short usage message and exit.', short_name='h')
 
-gflags.DEFINE_list('reviewers', list(), 'Comma separated list of reviewers.', short_name='r')
+gflags.DEFINE_list('reviewers', list(), 'Comma-separated list of reviewers.', short_name='r')
 gflags.DEFINE_list('cc', list(),
-                   'Comma separated list of addresses to copy on change notification mails.')
+                   'Comma-separated list of addresses to copy on change notification mails.')
 gflags.DEFINE_string('bug', None, 'Bug ID to include in the commit message header', short_name='b')
 gflags.DEFINE_string('message', None, 'Use the given message as the commit message.',
                      short_name='m')
@@ -273,8 +273,8 @@ def check_for_change_branch():
     """
     change_id = get_change_id_from_branch()
     if change_id is None:
-        exit_error('The current branch must be a change branch, '
-                   'usually previously created by git-change.')
+        exit_error('The current branch must be a change branch '
+                   'previously created by git-change.')
     head_change_id = get_change_id_from_head()
     if head_change_id is None:
         exit_error('The commit message at HEAD does not contain a valid change ID header.')
@@ -510,7 +510,7 @@ def garbage_collect():
     if unmerged_branches:
         print ('The following change branches could not be deleted, probably because they\n'
                'are not fully merged into the current branch. You might try first running\n'
-               'git-change rebase in order to sync with remote.\n')
+               'git-pull or git-change rebase in order to sync with remote.\n')
         for branch in unmerged_branches:
             print branch
 
