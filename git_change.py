@@ -1,10 +1,15 @@
 #!/usr/bin/env python
 
-"""Git subcommand which creates a Gerrit change.
+"""Git command which creates and manages a Gerrit change.
 
-Creates a change for the Gerrit code review tool. The files the make
-up the change must be staged for commit, and are committed in a new
-branch meant to exist exclusively for this change.
+Use git-change for creating and managing a change for the Gerrit code
+review tool. The default behavior is to create a new change. There are
+subcommands to manage the change at later staging, including uploading
+a new patch set, rebasing, and garbage-collecting the temporary change
+branches this command creates.
+
+The files that make up the change must be staged for commit, and are
+committed in a new branch meant to exist exclusively for this change.
 
 Performs the following operations:
   1. Notes the current tracking branch
@@ -269,9 +274,9 @@ def determine_branches():
     """Determines the current and target branches.
 
     The current branch is the current HEAD, and the target branch is
-    the branch to which this change is to be . The current branch may
-    or may not be a temporary change branch but the target branch is
-    always a tracking branch.
+    the branch to which this change is to be merged. The current
+    branch may or may not be a temporary change branch but the target
+    branch is always a tracking branch.
 
     Exits with a non-zero status if --chain is true and the current
     branch is *not* a change branch, or if --chain is false and the
