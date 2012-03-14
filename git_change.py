@@ -52,9 +52,6 @@ gflags.DEFINE_bool('chain', False,
 gflags.DEFINE_bool('fake_push', False,
                    'Do everything except for actually pushing the change to Gerrit.')
 
-gflags.DEFINE_bool('update', False,
-                   'Update an existing change with a new patch set. All other flags are ignored.')
-
 FLAGS = gflags.FLAGS
 
 
