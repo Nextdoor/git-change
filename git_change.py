@@ -1,27 +1,60 @@
 #!/usr/bin/env python
 
-"""Git command which creates and manages a Gerrit change.
+"""Git command to create and manage Gerrit changes.
 
-Use git-change for creating and managing a change for the Gerrit code
-review tool. The default behavior is to create a new change. There are
-subcommands to manage the change at later staging, including uploading
+Use git-change to create and manage changes for the Gerrit code review
+tool. The default behavior is to create a new change. There are
+subcommands to manage the change at later stages, including uploading
 a new patch set, rebasing, and garbage-collecting the temporary change
 branches this command creates.
 
-The files that make up the change must be staged for commit, and are
-committed in a new branch meant to exist exclusively for this change.
+Subcommands:
 
-Performs the following operations:
-  1. Notes the current tracking branch
-  2. Creates a temporary, local change branch
-  3. Commits staged changes
-  4. Pushes to the previously current branch
-  5. Renames the branch to reflect the Gerrit Change-Id
+create [-r|--reviewers=] [--cc=] [-b|--bug=] [-m|--message=]
+       [--topic=] [--[no]fetch] [--[no]switch] [--[no]chain]
 
-If there are commits in the tracking branch not yet merged in the
-remote branch prior to step 3 above, a warning is issued to explain
-that continuing would result in multiple changes being added to the
-temporary branch and pushed to Gerrit.
+    Create a new change and upload to Gerrit. Create is the default,
+    so omitting the subcommand causes git-change to behave as if
+    "create" had been specified.
+
+    The files that make up the change must be staged for commit, and are
+    committed in a new branch meant to exist exclusively for this change.
+
+    git-change create performs the following operations:
+      1. Notes the current tracking branch
+      2. Creates a temporary, local change branch
+      3. Commits staged changes
+      4. Pushes to the previously current branch
+      5. Renames the branch to reflect the Gerrit Change-Id
+
+    If there are commits in the tracking branch not yet merged in the
+    remote branch prior to step 3 above, a warning is issued to explain
+    that continuing would result in multiple changes being added to the
+    temporary branch and pushed to Gerrit.
+
+update
+
+    Update the existing Gerrit change with new changes. Staged changes
+    will be automatically committed by amending the HEAD commit. The
+    current branch must be a temporary change branch.
+
+rebase
+
+    Rebase the target and temporary change branches. The current
+    branch must be a temporary change branch.
+
+    Rebases the target branch (the branch from which the temporary
+    change branch was created) and then rebases the temporary change
+    branch. This can be used to pull upstream changes down to both
+    branches to resolve a failed Gerrit submission due to a path
+    conflict.
+
+    If there are conflicts with either rebase operation, the process
+    terminates and it is up to the user to resolve the conflicts.
+
+gc
+
+    Remove temporary change branches which are fully merged.
 """
 
 __author__ = 'jacob@nextdoor.com (Jacob Hesch)'
@@ -33,7 +66,9 @@ import gflags
 
 import git
 
-gflags.DEFINE_bool('help', False, 'Show a usage and exit.', short_name='h')
+# Used mainly to provide a usage summary with -h, consistent with
+# other git commands.
+gflags.DEFINE_bool('help_summary', False, 'Show a short usage message and exit.', short_name='h')
 
 gflags.DEFINE_list('reviewers', list(), 'Comma separated list of reviewers.', short_name='r')
 gflags.DEFINE_list('cc', list(),
@@ -63,10 +98,11 @@ def usage(include_flags=True):
     """
     message = ('Usage: git change [create] [<create-options>]\n'
                '   or: git change update\n'
+               '   or: git change rebase\n'
                '   or: git change gc\n'
                '\n'
-               '<create-options>: [-r|--reviewers=] [--cc=] [-b|--bug=] [-m|--message=] [--topic=] '
-               '[--[no]fetch] [--[no]switch] [--[no]chain]\n'
+               '<create-options>: [-r|--reviewers=] [--cc=] [-b|--bug=] [-m|--message=] '
+               '[--topic=] [--[no]fetch] [--[no]switch] [--[no]chain]\n'
                '\n'
                'See git-change(1) for full documentation.')
     print message
@@ -426,7 +462,7 @@ def garbage_collect():
     for branch in get_temp_branches():
         try:
             git.run_command('git branch -d %s' % branch, output_on_error=False)
-        except git.CalledProcessError, e:
+        except git.CalledProcessError:
             unmerged_branches.append(branch)
         else:
             print '\nDeleted branch %s\n' % branch
@@ -440,7 +476,7 @@ def garbage_collect():
 
 
 def main(argv):
-    if FLAGS.help:
+    if FLAGS.help_summary:
         usage(include_flags=False)
         sys.exit()
 
