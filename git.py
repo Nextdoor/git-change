@@ -280,10 +280,12 @@ def app(argv):
             git.app(sys.argv)
     """
     main_module = sys.modules['__main__']
+    FLAGS.UseGnuGetOpt(True)
     try:
         argv = FLAGS(argv)  # parse flags
     except gflags.FlagsError, e:
         if 'usage' in dir(main_module) and inspect.isfunction(main_module.usage):
+            print e
             main_module.usage()
         else:
             print '%s\nUsage: %s ARGS\n%s' % (e, sys.argv[0], FLAGS)

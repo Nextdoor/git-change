@@ -28,6 +28,8 @@ import gflags
 
 import git
 
+gflags.DEFINE_bool('help', False, 'Show a usage and exit.', short_name='h')
+
 gflags.DEFINE_list('reviewers', list(), 'Comma separated list of reviewers.', short_name='r')
 gflags.DEFINE_list('cc', list(),
                    'Comma separated list of addresses to copy on change notification mails.')
@@ -49,6 +51,25 @@ gflags.DEFINE_bool('update', False,
                    'Update an existing change with a new patch set. All other flags are ignored.')
 
 FLAGS = gflags.FLAGS
+
+
+def usage(include_flags=True):
+    """Prints a usage message.
+
+    Args:
+        include_flags: Include flag descriptions in the message.
+    """
+    message = ('Usage: git change [create] [<create-options>]\n'
+               '   or: git change update\n'
+               '   or: git change gc\n'
+               '\n'
+               '<create-options>: [-r|--reviewers=] [--cc=] [-b|--bug=] [-m|--message=] [--topic=] '
+               '[--[no]fetch] [--[no]switch] [--[no]chain]\n'
+               '\n'
+               'See git-change(1) for full documentation.')
+    print message
+    if include_flags:
+        print FLAGS
 
 
 def exit_error(message, prefix='Error: ', status=1):
@@ -187,7 +208,7 @@ def get_change(change_id):
     """
     results, _ = git.search_gerrit('change:%s' % change_id)
     if len(results) != 1:
-        exit_error('Got multiple results searching Gerrit for %s' % change_id)
+        exit_error('Got multiple results searching Gerrit for %s.' % change_id)
     return results[0]
 
 
@@ -278,11 +299,7 @@ def determine_branches():
     return original_branch, target_branch
 
 
-def main(argv):
-    if FLAGS.update:
-        update_change()
-        sys.exit(0)
-
+def create_change():
     if not git.run_command('git diff --cached --name-status'):
         exit_error('You have no staged changes; exiting', prefix='')
 
@@ -344,6 +361,30 @@ def main(argv):
         pass  # switch to (stay on) temporary change branch
     else:
         git.run_command('git checkout %s' % original_branch)
+
+
+def main(argv):
+    if FLAGS.help:
+        usage(include_flags=False)
+        sys.exit()
+
+    argc = len(argv)
+    if argc > 2:
+        usage(include_flags=False)
+        sys.exit(1)
+    elif argc == 2:
+        subcommand = argv[1]
+    else:
+        subcommand = 'create'  # default subcommand
+
+    if subcommand == 'create':
+        print 'create_change()'
+    elif subcommand == 'update':
+        print 'update_change()'
+    elif subcommand == 'gc':
+        print 'garbage_collect()'
+    else:
+        exit_error('Unknown subcommand: %s.' % subcommand)
 
 
 if __name__ == '__main__':
