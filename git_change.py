@@ -363,6 +363,49 @@ def create_change():
         git.run_command('git checkout %s' % original_branch)
 
 
+def rebase():
+    """One-liner.
+
+    More detail.
+    """
+    print 'rebasing'
+
+
+def get_temp_branches():
+    """Returns temporary change branches.
+
+    Temporary change branch names match the pattern 'change-*'.
+
+    Returns:
+        A sequence of strings each representing a branch names.
+    """
+    output = git.run_command(
+        'git for-each-ref --format="%(refname:short)" refs/heads/change-*')
+    if output:
+        return output.split('\n')
+    else:
+        return []
+
+
+def garbage_collect():
+    """Removes temporary change branches which are fully merged."""
+    unmerged_branches = []
+    for branch in get_temp_branches():
+        try:
+            git.run_command('git branch -d %s' % branch, output_on_error=False)
+        except git.CalledProcessError, e:
+            unmerged_branches.append(branch)
+        else:
+            print '\nDeleted branch %s\n' % branch
+
+    if unmerged_branches:
+        print ('The following change branches could not be deleted, probably because they\n'
+               'are not fully merged into the current branch. You might try first running\n'
+               'git-change rebase in order to sync with remote.\n')
+        for branch in unmerged_branches:
+            print branch
+
+
 def main(argv):
     if FLAGS.help:
         usage(include_flags=False)
@@ -378,11 +421,13 @@ def main(argv):
         subcommand = 'create'  # default subcommand
 
     if subcommand == 'create':
-        print 'create_change()'
+        create_change()
     elif subcommand == 'update':
-        print 'update_change()'
+        update_change()
+    elif subcommand == 'rebase':
+        rebase()
     elif subcommand == 'gc':
-        print 'garbage_collect()'
+        garbage_collect()
     else:
         exit_error('Unknown subcommand: %s.' % subcommand)
 
