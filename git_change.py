@@ -209,17 +209,23 @@ def get_change(change_id):
         the JSON data format.
     """
     results, _ = git.search_gerrit('change:%s' % change_id)
-    if len(results) != 1:
+    if len(results) < 1:
+        exit_error('Unable to find Gerrit change for ID %s.' % change_id)
+    elif len(results) > 1:
         exit_error('Got multiple results searching Gerrit for %s.' % change_id)
     return results[0]
 
 
-def update_change():
-    """Updates an existing change with Gerrit.
+def check_for_change_branch():
+    """Ensures that the current branch is a valid temporary change branch.
 
-    Runs a git push command to update an existing change. The change
-    ID is taken from the current branch, which should be a temporary
-    change branch created by a previous run of git-change.
+    If the current branch name does not begin with 'change-I', or if
+    the HEAD commit message does not contain a matching change ID
+    header, exits with a non-zero status.
+
+    Returns:
+        A string representing the change ID embedded in the current
+        temporary change branch name.
     """
     change_id = get_change_id_from_branch()
     if change_id is None:
@@ -232,6 +238,17 @@ def update_change():
         exit_error('The change ID in the commit message at HEAD (%s)\n'
                    'does not match the change ID embedded in the branch name (%s).' %
                    (head_change_id, change_id))
+    return change_id
+
+
+def update_change():
+    """Updates an existing change with Gerrit.
+
+    Runs a git push command to update an existing change. The change
+    ID is taken from the current branch, which should be a temporary
+    change branch created by a previous run of git-change.
+    """
+    change_id = check_for_change_branch()
     change = get_change(change_id)
     if not change['open']:
         exit_error('Change %s is no longer open.')
@@ -366,11 +383,25 @@ def create_change():
 
 
 def rebase():
-    """One-liner.
+    """Rebases the target and temporary change branches.
 
-    More detail.
+    Rebases the target branch (the branch from which the temporary
+    change branch was created) and then rebases the temporary change
+    branch. This can be used to pull upstream changes down to both
+    branches to resolve a failed Gerrit submission due to a path
+    conflict.
+
+    If there are conflicts with either rebase operation, the process
+    terminates and it is up to the user to resolve the conflicts.
     """
-    print 'rebasing'
+    change_id = check_for_change_branch()
+    change = get_change(change_id)
+    target_branch = change['branch']
+    original_branch = git.get_branch()
+    git.run_command('git checkout %s' % target_branch)
+    git.run_command('git pull --rebase')
+    git.run_command('git checkout %s' % original_branch)
+    git.run_command('git rebase %s' % target_branch)
 
 
 def get_temp_branches():
