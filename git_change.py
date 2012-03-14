@@ -52,6 +52,11 @@ rebase
     If there are conflicts with either rebase operation, the process
     terminates and it is up to the user to resolve the conflicts.
 
+list
+
+    List all temporary change branches and display a menu to check one
+    of them out.
+
 gc
 
     Remove temporary change branches which are fully merged.
@@ -456,6 +461,34 @@ def get_temp_branches():
         return []
 
 
+def list_change_branches():
+    """Lists all temporary change branches.
+
+    Lists the branches and prompts user with a menu to check one of
+    them out.
+    """
+    branches = get_temp_branches()
+    if not branches:
+        print 'No change branches'
+        return
+    print 'Change branches:\n'
+    i = 0
+    for branch in branches:
+        i += 1
+        out = git.run_command('git log --oneline -1 %s' % branch)
+        print '{0:>2}. {1} {2}'.format(i, branch, out)
+    try:
+        selection = raw_input('\nSelect a branch number to check out, '
+                              'or hit enter to exit: ')
+    except (EOFError, KeyboardInterrupt):
+        # User pressed or Ctrl-D or Ctrl-C.
+        return
+    if selection.isdigit() and int(selection) <= len(branches):
+        git.run_command('git checkout %s' % branches[int(selection) - 1])
+    elif selection:
+        print 'Not a valid selection'
+
+
 def garbage_collect():
     """Removes temporary change branches which are fully merged."""
     unmerged_branches = []
@@ -495,6 +528,8 @@ def main(argv):
         update_change()
     elif subcommand == 'rebase':
         rebase()
+    elif subcommand == 'list':
+        list_change_branches()
     elif subcommand == 'gc':
         garbage_collect()
     else:
