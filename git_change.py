@@ -12,6 +12,7 @@ Subcommands:
 
 create [-r|--reviewers=] [--cc=] [-b|--bug=] [-m|--message=]
        [--topic=] [--[no]fetch] [--[no]switch] [--[no]chain]
+       [--skip=]
 
     Create a new change and upload to Gerrit. Create is the default,
     so omitting the subcommand causes git-change to behave as if
@@ -32,7 +33,7 @@ create [-r|--reviewers=] [--cc=] [-b|--bug=] [-m|--message=]
     that continuing would result in multiple changes being added to the
     temporary branch and pushed to Gerrit.
 
-update
+update [--skip=]
 
     Update the existing Gerrit change with new changes. Staged changes
     will be automatically committed by amending the HEAD commit. The
@@ -89,6 +90,8 @@ gflags.DEFINE_bool('chain', False,
                    'Chain with the previous Gerrit change. Use when this change depends on '
                    'the previous one. Current branch must be a temporary change branch. '
                    'Implies --switch.')
+gflags.DEFINE_string('skip', None, 'Comma-separated list of pre-commit checks to skip. '
+                     'Options: tests, whitespace, linelength, pep8, pyflakes, jslint or all.')
 gflags.DEFINE_bool('fake_push', False,
                    'Do everything except for actually pushing the change to Gerrit.')
 
@@ -297,6 +300,9 @@ def update_change():
     # If there are staged changes commit them, amending the HEAD
     # commit.
     if git.run_command('git diff --cached --name-status'):
+        env = {}
+        if FLAGS.skip is not None:
+            env.update({'SKIP': FLAGS.skip})
         git.run_command_shell('git commit --amend')
 
     command = build_push_command(change['branch'])
@@ -315,10 +321,11 @@ def commit_change():
         git.CalledProcessError: 'git commit' exited with a non-zero
             status.
     """
-    if FLAGS.bug is None:
-        env = None
-    else:
-        env = {'ND_BUG_ID': FLAGS.bug}
+    env = {}
+    if FLAGS.bug is not None:
+        env.update({'ND_BUG_ID': FLAGS.bug})
+    if FLAGS.skip is not None:
+        env.update({'SKIP': FLAGS.skip})
     command = 'git commit'
     if FLAGS.message is not None:
         command = '%s -m "%s"' % (command, FLAGS.message)
