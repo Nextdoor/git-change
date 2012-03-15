@@ -411,8 +411,10 @@ def create_change():
     # Now rename the branch according to the change ID.
     change_id = get_change_id_from_head()
     if change_id is None:
-        # We couldn't read a change ID for some reason so just keep
-        # the temp name.
+        print ('\nWARNING: Reading change ID from the HEAD commit failed. (You may need to\n'
+               'install the Gerrit commit-msg hook.) Before continuing, you need to add\n'
+               'the change ID header to the HEAD commit message (git commit --amend) and\n'
+               'rename the branch %s to change-<change-ID> manaully.' % tmp_branch)
         new_branch = tmp_branch
     else:
         new_branch = 'change-%s' % change_id
