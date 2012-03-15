@@ -482,8 +482,8 @@ def list_change_branches():
     i = 0
     for branch in branches:
         i += 1
-        out = git.run_command('git log --oneline -1 %s' % branch)
-        print '{0:>2}. {1} {2}'.format(i, branch, out)
+        output = git.run_command('git log --oneline -1 %s' % branch)
+        print '{0:>2}. {1} {2}'.format(i, branch, output)
     try:
         selection = raw_input('\nSelect a branch number to check out, '
                               'or hit enter to exit: ')
