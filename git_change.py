@@ -111,7 +111,7 @@ def usage(include_flags=True):
                '   or: git change gc\n'
                '\n'
                '<create-options>: [-r|--reviewers=] [--cc=] [-b|--bug=] [-m|--message=] '
-               '[--topic=] [--[no]fetch] [--[no]switch] [--[no]chain]\n'
+               '[--topic=] [--[no]fetch] [--[no]switch] [--[no]chain] [--skip=]\n'
                '\n'
                'See git-change(1) for full documentation.')
     print message
