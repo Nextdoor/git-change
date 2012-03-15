@@ -14,9 +14,9 @@ create [-r|--reviewers=] [--cc=] [-b|--bug=] [-m|--message=]
        [--topic=] [--[no]fetch] [--[no]switch] [--[no]chain]
        [--skip=]
 
-    Create a new change and upload to Gerrit. Create is the default,
-    so omitting the subcommand causes git-change to behave as if
-    "create" had been specified.
+    Create a new change and upload to Gerrit. Creating a change is the
+    default operation, so omitting the subcommand causes git-change to
+    behave as if "create" had been specified.
 
     The files that make up the change must be staged for commit, and are
     committed in a new branch meant to exist exclusively for this change.
