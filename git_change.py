@@ -107,6 +107,7 @@ def usage(include_flags=True):
     message = ('Usage: git change [create] [<create-options>]\n'
                '   or: git change update\n'
                '   or: git change rebase\n'
+               '   or: git change list\n'
                '   or: git change gc\n'
                '\n'
                '<create-options>: [-r|--reviewers=] [--cc=] [-b|--bug=] [-m|--message=] '
@@ -476,7 +477,7 @@ def list_change_branches():
     """
     branches = get_temp_branches()
     if not branches:
-        print 'No change branches'
+        print 'You have no change branches to list'
         return
     print 'Change branches:\n'
     i = 0
