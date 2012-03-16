@@ -186,9 +186,11 @@ def build_push_command(branch):
     command = 'git push %s' % FLAGS.remote
     receive_pack_args = []
     for reviewer in FLAGS.reviewers:
-        receive_pack_args.append('--reviewer=%s' % reviewer)
+        if reviewer:  # trailing commas in flag value generate blank entries
+            receive_pack_args.append('--reviewer=%s' % reviewer)
     for cc in FLAGS.cc:
-        receive_pack_args.append('--cc=%s' % cc)
+        if cc:  # trailing commas in flag value generate blank entries
+            receive_pack_args.append('--cc=%s' % cc)
     if receive_pack_args:
         command = '%s --receive-pack="git receive-pack %s"' % (
             command, ' '.join(receive_pack_args))
