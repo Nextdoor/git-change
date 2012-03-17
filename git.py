@@ -190,13 +190,13 @@ def run_command_shell(command, env=None):
 
 
 def get_branch():
-    """Returns the current git branch.
+    """Returns the current git branch name.
 
     Returns:
         The name of the current branch as a string.
 
     Raises:
-        GitError: a valid branch name could not be read.
+        GitError: A valid branch name could not be read.
     """
     if FLAGS.dry_run:
         return 'fake-branch'
