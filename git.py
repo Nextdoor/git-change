@@ -144,8 +144,12 @@ def run_command(command, env=None, output_on_error=True):
     try:
         return check_output_separate(command_list, env=new_env).strip()
     except CalledProcessError, e:
+        if isinstance(e.cmd, basestring):
+            command = e.cmd
+        else:
+            command = ' '.join(e.cmd)
         if output_on_error:
-            print 'Error running "%s"' % e.cmd
+            print 'Error running "%s"' % command
             print '  return code: %s' % e.returncode
             print '  output: %s' % e.output
         raise
