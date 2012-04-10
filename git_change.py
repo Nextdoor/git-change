@@ -450,7 +450,14 @@ def create_change():
     print '\nCreated branch: %s\n' % new_branch
 
     command = build_push_command(target_branch)
-    print git.run_command(command)
+    try:
+        print git.run_command(command)
+    except git.CalledProcessError, e:
+        # Roll back the commit and remove the change branch.
+        git.run_command('git reset --soft HEAD^')
+        git.run_command('git checkout %s' % original_branch)
+        git.run_command('git branch -d %s' % original_branch)
+        sys.exit(e.returncode)
 
     # Switch back to the original branch, but not if --chain is true
     # as the user may be want to make multiple commits in the

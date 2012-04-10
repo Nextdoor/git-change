@@ -27,21 +27,30 @@ class GitError(Error):
     """Git exception type."""
 
 
-# Copied from subprocess.py of Python 2.7.
-class CalledProcessError(Exception):
-    """This exception is raised when a process run by check_call() or
+# Copied from subprocess.py of Python 2.7 and modified.
+class CalledProcessError(GitError):
+    """Signals a failed subprocess execution.
+
+    This exception type is like subprocess.CalledProcessError
+    (introduced in PYthon 2.7), but has two additional instance
+    attributes: stdout and stderr. The redundant and ambiguous
+    'output' attribute is kept for compatibility.
+
+    This exception is raised when a process run by check_call() or
     check_output() returns a non-zero exit status.
     The exit status will be stored in the returncode attribute;
     check_output() will also store the output in the output attribute.
     """
 
-    def __init__(self, returncode, cmd, output=None):
+    def __init__(self, returncode, cmd, output=None, stdout=None, stderr=None):
         self.returncode = returncode
         self.cmd = cmd
         self.output = output
+        self.stdout = stdout
+        self.stderr = stderr
 
     def __str__(self):
-        return "Command '%s' returned non-zero exit status %d" % (self.cmd, self.returncode)
+        return 'Command "%s" returned non-zero exit status %d' % (self.cmd, self.returncode)
 
 
 # Copied from subprocess.py of Python 2.7.
@@ -54,28 +63,28 @@ def check_output(*popenargs, **kwargs):
 
     The arguments are the same as for the Popen constructor.  Example:
 
-    >>> check_output(["ls", "-l", "/dev/null"])
+    >>> check_output(['ls', '-l', '/dev/null'])
     'crw-rw-rw- 1 root root 1, 3 Oct 18  2007 /dev/null\n'
 
     The stdout argument is not allowed as it is used internally.
     To capture standard error in the result, use stderr=STDOUT.
 
-    >>> check_output(["/bin/sh", "-c",
-    ...               "ls -l non_existent_file ; exit 0"],
+    >>> check_output(['/bin/sh', '-c',
+    ...               'ls -l non_existent_file ; exit 0'],
     ...              stderr=STDOUT)
     'ls: non_existent_file: No such file or directory\n'
     """
     if 'stdout' in kwargs:
         raise ValueError('stdout argument not allowed, it will be overridden.')
     process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, **kwargs)
-    output, unused_err = process.communicate()
+    stdout, stderr = process.communicate()
     retcode = process.poll()
     if retcode:
-        cmd = kwargs.get("args")
+        cmd = kwargs.get('args')
         if cmd is None:
             cmd = popenargs[0]
-        raise CalledProcessError(retcode, cmd, output=output)
-    return output
+        raise CalledProcessError(retcode, cmd, output=stdout, stdout=stdout, stderr=stderr)
+    return stdout
 
 
 def check_output_separate(*popenargs, **kwargs):
@@ -110,7 +119,7 @@ def check_output_separate(*popenargs, **kwargs):
         command = kwargs.get('args')
         if command is None:
             command = popenargs[0]
-        raise CalledProcessError(return_code, command, output=stderr)
+        raise CalledProcessError(return_code, command, output=stderr, stdout=stdout, stderr=stderr)
     return stdout
 
 
@@ -151,7 +160,8 @@ def run_command(command, env=None, output_on_error=True):
         if output_on_error:
             print 'Error running "%s"' % command
             print '  return code: %s' % e.returncode
-            print '  output: %s' % e.output
+            print '  stdout: %s' % e.stdout
+            print '  stderr: %s' % e.stderr
         raise
 
 
