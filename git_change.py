@@ -483,11 +483,26 @@ def rebase():
     change_id = check_for_change_branch()
     change = get_change(change_id)
     target_branch = change['branch']
-    original_branch = git.get_branch()
+    change_branch = git.get_branch()
+
     git.run_command('git checkout %s' % target_branch)
-    git.run_command('git pull --rebase')
-    git.run_command('git checkout %s' % original_branch)
-    git.run_command('git rebase %s' % target_branch)
+    try:
+        git.run_command('git pull --rebase')
+    except git.CalledProcessError, e:
+        print ('Rebase failed for branch %s. After resolving merge failure(s),\n'
+               'check out the change branch (%s) and run "git change rebase" again.\n'
+               'See "git help rebase" for help on resolving merge conflicts.' %
+               (target_branch, change_branch))
+        sys.exit(e.returncode)
+
+    git.run_command('git checkout %s' % change_branch)
+    try:
+        git.run_command('git rebase %s' % target_branch)
+    except git.CalledProcessError, e:
+        print ('Rebase failed for branch %s. After resolving merge failure(s),\n'
+               'run "git change rebase" again. See "git help rebase" for help\n'
+               'on resolving merge conflicts.' % change_branch)
+        sys.exit(e.returncode)
 
 
 def get_temp_branches():
