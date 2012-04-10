@@ -74,7 +74,7 @@ gc
 
     Remove temporary change branches which are fully merged.
 
-print
+print [-r|--reviewers=] [--cc=] [--topic=]
 
     Print the command to push a change to Gerrit. This can be useful
     if manaually creating a Gerrit code review is desired.
