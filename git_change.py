@@ -73,6 +73,11 @@ list
 gc
 
     Remove temporary change branches which are fully merged.
+
+print
+
+    Print the command to push a change to Gerrit. This can be useful
+    if manaually creating a Gerrit code review is desired.
 """
 
 __author__ = 'jacob@nextdoor.com (Jacob Hesch)'
@@ -588,6 +593,17 @@ def garbage_collect():
             print branch
 
 
+def print_push_command():
+    """Prints the command to push a change to Gerrit."""
+    change_id = get_change_id_from_branch()
+    if change_id is not None:
+        change = get_change(change_id)
+        target_branch = change['branch']
+    else:
+        target_branch = git.get_branch()
+    print build_push_command(target_branch)
+
+
 def main(argv):
     if FLAGS.help_summary:
         usage(include_flags=False)
@@ -612,6 +628,8 @@ def main(argv):
         list_change_branches()
     elif subcommand == 'gc':
         garbage_collect()
+    elif subcommand == 'print':
+        print_push_command()
     else:
         exit_error('Unknown subcommand: %s.' % subcommand)
 
