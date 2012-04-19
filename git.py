@@ -165,6 +165,25 @@ def run_command(command, env=None, output_on_error=True):
         raise
 
 
+def run_command_or_die(command, env=None):
+    """Runs the given command and dies on error.
+
+    If command exits with a non-zero status, its stderr is written on
+    this process's stderr and then this process exits with the same
+    exit status.
+
+    Args:
+        command: A string representing the command to run.
+        env: A dictionary representing command's environment. Note
+            that these are added to the parent process's environment.
+    """
+    try:
+        run_command(command, env=env, output_on_error=False)
+    except CalledProcessError, e:
+        sys.stderr.write(e.stderr)
+        sys.exit(e.returncode)
+
+
 def run_command_shell(command, env=None):
     """Runs the given command.
 

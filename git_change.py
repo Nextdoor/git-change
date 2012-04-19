@@ -510,7 +510,7 @@ def rebase():
     target_branch = change['branch']
     change_branch = git.get_branch()
 
-    git.run_command('git checkout %s' % target_branch)
+    git.run_command_or_die('git checkout %s' % target_branch)
     try:
         git.run_command('git pull --rebase')
     except git.CalledProcessError, e:
@@ -520,7 +520,7 @@ def rebase():
                (target_branch, change_branch))
         sys.exit(e.returncode)
 
-    git.run_command('git checkout %s' % change_branch)
+    git.run_command_or_die('git checkout %s' % change_branch)
     try:
         git.run_command('git rebase %s' % target_branch)
     except git.CalledProcessError, e:
@@ -569,11 +569,7 @@ def list_change_branches():
         # User pressed or Ctrl-D or Ctrl-C.
         return
     if selection.isdigit() and int(selection) <= len(branches):
-        try:
-            git.run_command('git checkout %s' % branches[int(selection) - 1])
-        except git.CalledProcessError, e:
-            print e.stderr
-            sys.exit(e.returncode)
+        git.run_command_or_die('git checkout %s' % branches[int(selection) - 1])
     elif selection:
         print 'Not a valid selection'
     else:
