@@ -150,7 +150,7 @@ def exit_error(message, prefix='Error: ', status=1):
         prefix: A string to prepend to message
         stautus: An integer representing the exit status code.
     """
-    print '%s%s' % (prefix, message)
+    sys.stderr.write('%s%s\n' % (prefix, message))
     sys.exit(status)
 
 
@@ -247,7 +247,7 @@ def check_unmerged_commits(branch):
 
     print 'Your branch %s is ahead of its remote by the following %s commit(s):\n' % (
         branch, len(output.split('\n')))
-    print output
+    sys.stdout.write(output)
     user_input = raw_input(
         '\nIf we continue, multiple commits will be added to the new branch and\n'
         'pushed for review. Those commits will have submit dependencies in Gerrit.\n'
@@ -320,18 +320,18 @@ def update_change():
     change_id = check_for_change_branch()
     change = get_change(change_id)
     if not change['open']:
-        exit_error('Change %s is no longer open.')
+        exit_error('Change %s is no longer open.' % change_id)
 
     # Amend the HEAD commit if there are staged changes or if at least
     # one of the --reviewers, --cc or --bug flags was passed.
     if (FLAGS.reviewers or FLAGS.cc or FLAGS.bug is not None or
         git.run_command('git diff --cached --name-status')):
 
-        print commit_change(['--amend'])
+        commit_change(['--amend'])
 
     command = build_push_command(change['branch'])
     try:
-        print git.run_command(command)
+        sys.stdout.write(git.run_command(command))
     except git.CalledProcessError, e:
         # Run command prints an error message prior to raising.
         sys.exit(e.returncode)
@@ -349,9 +349,6 @@ def commit_change(args=None):
         args: A sequence of strings containing flags to pass to
             git-commit.
 
-    Returns:
-        A string representing the output of git-commit.
-
     Raises:
         git.CalledProcessError: 'git commit' exited with a non-zero
             status.
@@ -366,7 +363,7 @@ def commit_change(args=None):
         command = '%s %s' % (command, ' '.join(args))
     if FLAGS.message is not None:
         command = '%s -m "%s"' % (command, FLAGS.message)
-    return git.run_command_shell(command, env=env)
+    git.run_command_shell(command, env=env)
 
 
 def determine_branches():
@@ -416,7 +413,7 @@ def commit_staged_changes(original_branch, tmp_branch):
             change branch. Used for rolling back on error.
     """
     try:
-        print commit_change()
+        commit_change()
     except KeyboardInterrupt:
         # The user bailed with Control-C.
         git.run_command('git checkout %s' % original_branch)
@@ -444,7 +441,7 @@ def create_change():
     if FLAGS.fetch:
         output = git.run_command('git fetch %s' % FLAGS.remote)
         if output:
-            print output
+            sys.stdout.write(output)
 
     # Make sure the original branch does not have any unmerged commits
     # relative to its remote. This check only makes sense if
@@ -476,7 +473,7 @@ def create_change():
 
     command = build_push_command(target_branch)
     try:
-        print git.run_command(command)
+        sys.stdout.write(git.run_command(command))
     except git.CalledProcessError, e:
         # Roll back the commit and remove the change branch.
         git.run_command('git reset --soft HEAD^')
@@ -541,7 +538,7 @@ def get_temp_branches():
     output = git.run_command(
         'git for-each-ref --format="%(refname:short)" refs/heads/change-*')
     if output:
-        return output.split('\n')
+        return output.strip().split('\n')
     else:
         return []
 
@@ -561,7 +558,7 @@ def list_change_branches():
     for branch in branches:
         i += 1
         output = git.run_command('git log --oneline -1 %s' % branch)
-        print '{0:>2}. {1} {2}'.format(i, branch, output)
+        sys.stdout.write('{0:>2}. {1} {2}'.format(i, branch, output))
     try:
         selection = raw_input('\nSelect a branch number to check out, '
                               'or hit enter to exit: ')
@@ -579,15 +576,19 @@ def list_change_branches():
 def garbage_collect():
     """Removes temporary change branches which are fully merged."""
     unmerged_branches = []
+    deleted = False
     for branch in get_temp_branches():
         try:
             git.run_command('git branch -d %s' % branch, output_on_error=False)
         except git.CalledProcessError:
             unmerged_branches.append(branch)
         else:
-            print '\nDeleted branch %s\n' % branch
+            print 'Deleted branch %s' % branch
+            deleted = True
 
     if unmerged_branches:
+        if deleted:
+            print  # Blank line between deleted branches and the message below.
         print ('The following change branches could not be deleted, probably because they\n'
                'are not fully merged into the current branch. You might try first running\n'
                'git-pull or git-change rebase in order to sync with remote.\n')

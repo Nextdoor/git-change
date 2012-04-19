@@ -99,8 +99,8 @@ def check_output_separate(*popenargs, **kwargs):
     in its 'output' property.
 
     Args:
-        Same as subprocess.Popen, except stdout and stderr cannot be
-        provided as they would be overridden.
+        Same as subprocess.Popen, except stdout and stderr are not
+        allowed as they are used internally.
 
     Returns:
         A string representing the command's stdout.
@@ -142,7 +142,7 @@ def run_command(command, env=None, output_on_error=True):
     """
     if FLAGS.dry_run:
         print 'run_command >>> %s' % command
-        return 'dry-run-no-output'
+        return 'dry-run-no-output\n'
 
     new_env = os.environ.copy()
     if env is not None:
@@ -151,7 +151,7 @@ def run_command(command, env=None, output_on_error=True):
     command_list = shlex.split(command)
 
     try:
-        return check_output_separate(command_list, env=new_env).strip()
+        return check_output_separate(command_list, env=new_env)
     except CalledProcessError, e:
         if isinstance(e.cmd, basestring):
             command = e.cmd
@@ -185,7 +185,7 @@ def run_command_or_die(command, env=None):
 
 
 def run_command_shell(command, env=None):
-    """Runs the given command.
+    """Runs the given command in a shell.
 
     Normally, run_command should be used. Use run_command_shell if
     command needs to interact with the user, like with 'git commit'
@@ -198,25 +198,20 @@ def run_command_shell(command, env=None):
         command: A string representing the command to run.
         env: A dictionary representing command's environment. Note
             that these are applied to the parent process's environment.
-            (default) command is run using os.execvp().
-
-    Returns:
-        A string representing command's stderr. Commands' stdout will
-        be sent to the parent process's stdout.
 
     Raises:
         CalledProcessError: The command exited with a non-zero status.
     """
     if FLAGS.dry_run:
         print 'run_command_shell >>> %s' % command
-        return 'dry-run-no-output'
+        return
 
     new_env = os.environ.copy()
     if env is not None:
         new_env.update(env)
 
     process = subprocess.Popen(command, shell=True, env=new_env)
-    process.communicate()
+    process.communicate()  # wait for process to terminate
     status = process.poll()
     if status:
         raise CalledProcessError(status, command)
@@ -236,7 +231,7 @@ def get_branch():
     output = run_command('git symbolic-ref HEAD')
     parts = output.split('/')
     if len(parts) == 3:
-        return parts[2]
+        return parts[2].strip()
     else:
         raise GitError('Could not get a branch name from "%s"' % output)
 
