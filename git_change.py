@@ -569,9 +569,15 @@ def list_change_branches():
         # User pressed or Ctrl-D or Ctrl-C.
         return
     if selection.isdigit() and int(selection) <= len(branches):
-        git.run_command('git checkout %s' % branches[int(selection) - 1])
+        try:
+            git.run_command('git checkout %s' % branches[int(selection) - 1])
+        except git.CalledProcessError, e:
+            print e.stderr
+            sys.exit(e.returncode)
     elif selection:
         print 'Not a valid selection'
+    else:
+        pass  # User hit enter; just exit.
 
 
 def garbage_collect():
