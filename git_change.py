@@ -184,7 +184,7 @@ def get_change_id_from_head():
         A string representing the HEAD commit's change ID if it is
         available, or None if not.
     """
-    output = git.run_command('git cat-file -p HEAD')
+    output = git.run_command('git cat-file -p HEAD', trap_stdout=True)
     lines = output.split('\n')
     for line in lines:
         if line.startswith('Change-Id:'):
@@ -241,7 +241,8 @@ def check_unmerged_commits(branch):
         remote branch. False if not, or if the user elected to proceed
         anyway.
     """
-    output = git.run_command('git log --oneline %s ^%s/%s' % (branch, FLAGS.remote, branch))
+    output = git.run_command('git log --oneline %s ^%s/%s' % (branch, FLAGS.remote, branch),
+                             trap_stdout=True)
     if not output or FLAGS.dry_run:
         return False
 
@@ -331,7 +332,7 @@ def update_change():
 
     command = build_push_command(change['branch'])
     try:
-        sys.stdout.write(git.run_command(command))
+        git.run_command(command)
     except git.CalledProcessError, e:
         # Run command prints an error message prior to raising.
         sys.exit(e.returncode)
@@ -430,7 +431,7 @@ def commit_staged_changes(original_branch, tmp_branch):
 def create_change():
     """Creates a Gerrit code review change."""
     if not FLAGS.use_head_commit:
-        if not git.run_command('git diff --cached --name-status'):
+        if not git.run_command('git diff --cached --name-status', trap_stdout=True):
             exit_error('You have no staged changes; exiting.\n'
                        '(You may want to specify --use_head_commit.)', prefix='')
 
@@ -439,9 +440,7 @@ def create_change():
     # Fetch from origin so that we can see how many commits ahead our
     # local branch is.
     if FLAGS.fetch:
-        output = git.run_command('git fetch %s' % FLAGS.remote)
-        if output:
-            sys.stdout.write(output)
+        git.run_command('git fetch %s' % FLAGS.remote)
 
     # Make sure the original branch does not have any unmerged commits
     # relative to its remote. This check only makes sense if
@@ -473,7 +472,7 @@ def create_change():
 
     command = build_push_command(target_branch)
     try:
-        sys.stdout.write(git.run_command(command))
+        git.run_command(command)
     except git.CalledProcessError, e:
         # Roll back the commit and remove the change branch.
         git.run_command('git reset --soft HEAD^')
@@ -509,7 +508,7 @@ def rebase():
 
     git.run_command_or_die('git checkout %s' % target_branch)
     try:
-        git.run_command('git pull --rebase')
+        git.run_command('git pull --rebase', output_on_error=False)
     except git.CalledProcessError, e:
         print ('Rebase failed for branch %s. After resolving merge failure(s),\n'
                'check out the change branch (%s) and run "git change rebase" again.\n'
@@ -536,7 +535,7 @@ def get_temp_branches():
         A sequence of strings each representing a branch names.
     """
     output = git.run_command(
-        'git for-each-ref --format="%(refname:short)" refs/heads/change-*')
+        'git for-each-ref --format="%(refname:short)" refs/heads/change-*', trap_stdout=True)
     if output:
         return output.strip().split('\n')
     else:
@@ -557,7 +556,7 @@ def list_change_branches():
     i = 0
     for branch in branches:
         i += 1
-        output = git.run_command('git log --oneline -1 %s' % branch)
+        output = git.run_command('git log --oneline -1 %s' % branch, trap_stdout=True)
         sys.stdout.write('{0:>2}. {1} {2}'.format(i, branch, output))
     try:
         selection = raw_input('\nSelect a branch number to check out, '
@@ -579,7 +578,7 @@ def garbage_collect():
     deleted = False
     for branch in get_temp_branches():
         try:
-            git.run_command('git branch -d %s' % branch, output_on_error=False)
+            git.run_command('git branch -d %s' % branch, trap_stderr=True, output_on_error=False)
         except git.CalledProcessError:
             unmerged_branches.append(branch)
         else:

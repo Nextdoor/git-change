@@ -34,7 +34,8 @@ class CalledProcessError(GitError):
     This exception type is like subprocess.CalledProcessError
     (introduced in PYthon 2.7), but has two additional instance
     attributes: stdout and stderr. The redundant and ambiguous
-    'output' attribute is kept for compatibility.
+    'output' attribute is kept for compatibility and for cases
+    where stdout and stderr are combined.
 
     This exception is raised when a process run by check_call() or
     check_output() returns a non-zero exit status.
@@ -53,92 +54,42 @@ class CalledProcessError(GitError):
         return 'Command "%s" returned non-zero exit status %d' % (self.cmd, self.returncode)
 
 
-# Copied from subprocess.py of Python 2.7.
-def check_output(*popenargs, **kwargs):
-    r"""Run command with arguments and return its output as a byte string.
+def run_command(command, env=None, trap_stdout=False,
+                trap_stderr=False, output_on_error=True):
+    """Runs the given command as a subprocess.
 
-    If the exit code was non-zero it raises a CalledProcessError.  The
-    CalledProcessError object will have the return code in the returncode
-    attribute and output in the output attribute.
-
-    The arguments are the same as for the Popen constructor.  Example:
-
-    >>> check_output(['ls', '-l', '/dev/null'])
-    'crw-rw-rw- 1 root root 1, 3 Oct 18  2007 /dev/null\n'
-
-    The stdout argument is not allowed as it is used internally.
-    To capture standard error in the result, use stderr=STDOUT.
-
-    >>> check_output(['/bin/sh', '-c',
-    ...               'ls -l non_existent_file ; exit 0'],
-    ...              stderr=STDOUT)
-    'ls: non_existent_file: No such file or directory\n'
-    """
-    if 'stdout' in kwargs:
-        raise ValueError('stdout argument not allowed, it will be overridden.')
-    process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, **kwargs)
-    stdout, stderr = process.communicate()
-    retcode = process.poll()
-    if retcode:
-        cmd = kwargs.get('args')
-        if cmd is None:
-            cmd = popenargs[0]
-        raise CalledProcessError(retcode, cmd, output=stdout, stdout=stdout, stderr=stderr)
-    return stdout
-
-
-def check_output_separate(*popenargs, **kwargs):
-    """Runs command with arguments and returns its stdout output.
-
-    Like subprocess.check_output, but separates stdout and stderr.
-    Note: check_output was added to subprocess as of Python 2.7.
-
-    Returns stdout, unless the command exits with a non-zero
-    status. If command exits with a non-zero status, a
-    CalledProcessError exception is raised with command's stderr set
-    in its 'output' property.
-
-    Args:
-        Same as subprocess.Popen, except stdout and stderr are not
-        allowed as they are used internally.
-
-    Returns:
-        A string representing the command's stdout.
-
-    Raises:
-        CalledProcessError: The command exited with a non-zero
-            status. Its stderr output is attached to the exception
-            object's 'output' property.
-    """
-    if 'stdout' in kwargs or 'stderr' in kwargs:
-        raise ValueError('stdout and stderr not allowed; they will be overridden.')
-    process = subprocess.Popen(stdout=subprocess.PIPE, stderr=subprocess.PIPE, *popenargs, **kwargs)
-    stdout, stderr = process.communicate()
-    return_code = process.poll()
-    if return_code:
-        command = kwargs.get('args')
-        if command is None:
-            command = popenargs[0]
-        raise CalledProcessError(return_code, command, output=stderr, stdout=stdout, stderr=stderr)
-    return stdout
-
-
-def run_command(command, env=None, output_on_error=True):
-    """Runs the given command.
+    By default, the subprocess inherits the stdout and stderr file
+    handles from the calling process. This behavior can be changed by
+    setting the trap_stdout and trap_stderr arguments to True.
 
     Args:
         command: A string representing the command to run.
         env: A dictionary representing command's environment. Note
             that these are added to the parent process's environment.
+        trap_stdout: If True, command's stdout is captured and returned.
+            If False, command inherits the stdout file handle of the
+            calling process.
+        trap_stderr: If True, command's stderr is captured and returned.
+            If False, command inherits the stderr file handle of the
+            calling process.
         output_on_error: A boolean to flag whether to print output if
             an error running command occurs.
 
     Returns:
-        A string representing command's output. Note that stdout and
-        stderr are combined.
+        A string or tuple of strings representing the command's output
+        or None depending on the values of the stdout and stderr
+        arguments. Here are the return values according to those
+        arguments:
+            trap_stdout=False, trap_stderr=False (default): returns None
+            trap_stdout=True, trap_stderr=False: returns stdout
+            trap_stdout=False, trap_stderr=True: returns stderr
+            trap_stdout=True, trap_stderr=True: returns (stdout, stderr)
 
     Raises:
         CalledProcessError: The command exited with a non-zero status.
+            If stdout and stderr are trapped, the output to those file
+            handles from the subprocess will be attached to the
+            exception object.
     """
     if FLAGS.dry_run:
         print 'run_command >>> %s' % command
@@ -150,35 +101,54 @@ def run_command(command, env=None, output_on_error=True):
 
     command_list = shlex.split(command)
 
-    try:
-        return check_output_separate(command_list, env=new_env)
-    except CalledProcessError, e:
-        if isinstance(e.cmd, basestring):
-            command = e.cmd
-        else:
-            command = ' '.join(e.cmd)
+    stdout = stderr = None
+    if trap_stdout:
+        stdout = subprocess.PIPE
+    if trap_stderr:
+        stderr = subprocess.PIPE
+
+    process = subprocess.Popen(command_list, env=new_env, stdout=stdout, stderr=stderr)
+    stdout, stderr = process.communicate()
+    return_code = process.poll()
+    if return_code:
         if output_on_error:
             print 'Error running "%s"' % command
-            print '  return code: %s' % e.returncode
-            print '  stdout: %s' % e.stdout
-            print '  stderr: %s' % e.stderr
-        raise
+            print '  return code: %s' % return_code
+            if trap_stdout:
+                print '  stdout: %s' % stdout
+            if trap_stderr:
+                print '  stderr: %s' % stderr
+        raise CalledProcessError(return_code, command, output=stderr, stdout=stdout, stderr=stderr)
+
+    if stdout is not None and stderr is not None:
+        return stdout, stderr
+    elif stdout is not None:
+        return stdout
+    elif stderr is not None:
+        return stderr
+    else:
+        return None
 
 
 def run_command_or_die(command, env=None):
     """Runs the given command and dies on error.
 
-    If command exits with a non-zero status, its stderr is written on
-    this process's stderr and then this process exits with the same
-    exit status.
+    Command's output is trapped. If it exits with a non-zero status,
+    its stderr is written to the stderr of the calling process and
+    then the calling process exits with the same status.
 
     Args:
         command: A string representing the command to run.
         env: A dictionary representing command's environment. Note
             that these are added to the parent process's environment.
+
+    Returns:
+        A tuple of strings representing the command's stdout and
+        stderr.
     """
     try:
-        run_command(command, env=env, output_on_error=False)
+        return run_command(command, env=env, trap_stdout=True, trap_stderr=True,
+                           output_on_error=False)
     except CalledProcessError, e:
         sys.stderr.write(e.stderr)
         sys.exit(e.returncode)
@@ -228,7 +198,7 @@ def get_branch():
     """
     if FLAGS.dry_run:
         return 'fake-branch'
-    output = run_command('git symbolic-ref HEAD')
+    output = run_command('git symbolic-ref HEAD', trap_stdout=True)
     parts = output.split('/')
     if len(parts) == 3:
         return parts[2].strip()
@@ -271,7 +241,7 @@ def search_gerrit(query):
     """
     results = []
     stats = None
-    response = run_command('ssh review gerrit query --format=JSON %s' % query)
+    response = run_command('ssh review gerrit query --format=JSON %s' % query, trap_stdout=True)
     for line in response.split('\n'):
         if not line:
             continue
