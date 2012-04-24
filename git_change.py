@@ -578,11 +578,11 @@ def garbage_collect():
     deleted = False
     for branch in get_temp_branches():
         try:
+            # Note: git branch -d prints 'Deleted branch ...' to stdout.
             git.run_command('git branch -d %s' % branch, trap_stderr=True, output_on_error=False)
         except git.CalledProcessError:
             unmerged_branches.append(branch)
         else:
-            print 'Deleted branch %s' % branch
             deleted = True
 
     if unmerged_branches:
