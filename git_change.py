@@ -452,7 +452,7 @@ def create_change():
     # Create and switch to a temporary branch. Once we have a change
     # ID, it will be renamed to include the ID.
     tmp_branch = 'tmp-change-%s' % time.time()
-    git.run_command('git checkout -b %s' % tmp_branch)
+    git.run_command('git checkout -b %s' % tmp_branch, trap_stdout=True)
 
     if not FLAGS.use_head_commit:
         commit_staged_changes(original_branch, tmp_branch)
@@ -486,7 +486,7 @@ def create_change():
     if FLAGS.switch or FLAGS.chain:
         pass  # switch to (stay on) temporary change branch
     else:
-        git.run_command('git checkout %s' % original_branch)
+        git.run_command('git checkout %s' % original_branch, trap_stdout=True)
 
 
 def rebase():
