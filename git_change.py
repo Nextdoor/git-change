@@ -477,7 +477,7 @@ def create_change():
         # Roll back the commit and remove the change branch.
         git.run_command('git reset --soft HEAD^')
         git.run_command('git checkout %s' % original_branch)
-        git.run_command('git branch -d %s' % original_branch)
+        git.run_command('git branch -d %s' % new_branch)
         sys.exit(e.returncode)
 
     # Switch back to the original branch, but not if --chain is true
