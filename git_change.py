@@ -486,7 +486,7 @@ def create_change():
     if FLAGS.switch or FLAGS.chain:
         pass  # switch to (stay on) temporary change branch
     else:
-        git.run_command('git checkout %s' % original_branch, trap_stdout=True)
+        git.run_command_or_die('git checkout %s' % original_branch)
 
 
 def rebase():
