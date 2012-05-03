@@ -326,7 +326,7 @@ def update_change():
     # Amend the HEAD commit if there are staged changes or if at least
     # one of the --reviewers, --cc or --bug flags was passed.
     if (FLAGS.reviewers or FLAGS.cc or FLAGS.bug is not None or
-        git.run_command('git diff --cached --name-status'), trap_stdout=True):
+        git.run_command('git diff --cached --name-status', trap_stdout=True)):
 
         commit_change(['--amend'])
 
