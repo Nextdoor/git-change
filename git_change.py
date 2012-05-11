@@ -382,6 +382,30 @@ def commit_change(args=None):
     git.run_command_shell(command, env=env)
 
 
+def sanity_check_merge_commit():
+    """Checks whether the HEAD commit looks like a merge.
+
+    If the HEAD commit does not look like a merge, prompts the user to
+    see if we should continue, and exits if not.
+    """
+    num_parents = 0
+    merge_message_seen = False
+    output = git.run_command('git cat-file -p HEAD', trap_stdout=True)
+    lines = output.split('\n')
+    for line in lines:
+        if line.startswith('parent '):
+            num_parents += 1
+        elif line.startswith('Merge branch '):
+            merge_message_seen = True
+    if num_parents < 2 or not merge_message_seen:
+        user_input = raw_input('The HEAD commit does not look like a merge. Continue? ')
+        if user_input.lower().startswith('y'):
+            return
+        else:
+            print 'Aborted'
+            sys.exit(1)
+
+
 def determine_branches():
     """Determines the current and target branches.
 
@@ -449,6 +473,9 @@ def create_change():
         if not git.run_command('git diff --cached --name-status', trap_stdout=True):
             exit_error('You have no staged changes; exiting.\n'
                        '(You may want to specify --use_head_commit.)', prefix='')
+
+    if FLAGS.merge_commit:
+        sanity_check_merge_commit()
 
     original_branch, target_branch = determine_branches()
 
