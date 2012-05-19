@@ -595,7 +595,8 @@ def get_temp_branches():
         A sequence of strings each representing a branch names.
     """
     output = git.run_command(
-        'git for-each-ref --format="%(refname:short)" refs/heads/change-*', trap_stdout=True)
+        'git for-each-ref --format="%(refname:short)" --sort=authordate refs/heads/change-*',
+        trap_stdout=True)
     if output:
         return output.strip().split('\n')
     else:
