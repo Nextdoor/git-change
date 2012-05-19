@@ -608,7 +608,9 @@ def get_change_branches():
     Temporary change branch names match the pattern 'change-*'.
 
     Returns:
-        A sequence of strings each representing a branch names.
+        A sequence of strings each representing a branch names, sorted
+        in chronological order based on the author date of each
+        branch's HEAD commit.
     """
     output = git.run_command(
         'git for-each-ref --format="%(refname:short)" --sort=authordate refs/heads/change-*',
