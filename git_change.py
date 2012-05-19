@@ -382,6 +382,18 @@ def commit_change(args=None):
     git.run_command_shell(command, env=env)
 
 
+def check_for_pending_changes():
+    """Checks the working tree and index for changed files.
+
+    If there are any uncommitted changes, exits with an error.
+    """
+    output = git.run_command('git status --porcelain', trap_stdout=True)
+    if output:
+        git.run_command('git status')
+        exit_error('You have uncommitted changes in your working tree/index. '
+                   'Please stash them and try again.')
+
+
 def sanity_check_merge_commit():
     """Checks whether the HEAD commit looks like a merge.
 
@@ -475,6 +487,7 @@ def create_change():
                        '(You may want to specify --use_head_commit.)', prefix='')
 
     if FLAGS.merge_commit:
+        check_for_pending_changes()
         sanity_check_merge_commit()
 
     original_branch, target_branch = determine_branches()
@@ -533,8 +546,11 @@ def create_change():
         # Remove the merge commit from the original branch to avoid
         # duplicating the commit in case the version of that commit in
         # the change branch is amended (i.e., its SHA1 hash changed).
+        # The call to check_for_pending_changes above ensures that the
+        # working tree and index are clean and thus 'git reset --hard'
+        # is safe to run.
         git.run_command('git checkout %s' % original_branch)
-        git.run_command('git reset --soft HEAD^')
+        git.run_command('git reset --hard HEAD^')
         print 'Removed HEAD commit from branch %s' % original_branch
         if FLAGS.switch or FLAGS.chain:
             git.run_command('git checkout %s' % new_branch)
