@@ -602,7 +602,7 @@ def rebase():
         sys.exit(e.returncode)
 
 
-def get_temp_branches():
+def get_change_branches():
     """Returns temporary change branches.
 
     Temporary change branch names match the pattern 'change-*'.
@@ -625,7 +625,7 @@ def list_change_branches():
     Lists the branches and prompts user with a menu to check one of
     them out.
     """
-    branches = get_temp_branches()
+    branches = get_change_branches()
     if not branches:
         print 'You have no change branches to list'
         return
@@ -653,7 +653,7 @@ def garbage_collect():
     """Removes temporary change branches which are fully merged."""
     unmerged_branches = []
     deleted = False
-    for branch in get_temp_branches():
+    for branch in get_change_branches():
         try:
             # Note: git branch -d prints 'Deleted branch ...' to stdout.
             git.run_command('git branch -d %s' % branch, trap_stderr=True, output_on_error=False)
