@@ -385,9 +385,10 @@ def commit_change(args=None):
 def check_for_pending_changes():
     """Checks the working tree and index for changed files.
 
-    If there are any uncommitted changes, exits with an error.
+    If there are any uncommitted changes, exits with an
+    error. Untracked files are okay.
     """
-    output = git.run_command('git status --porcelain', trap_stdout=True)
+    output = git.run_command('git status --porcelain --untracked-files=no', trap_stdout=True)
     if output:
         git.run_command('git status')
         exit_error('You have uncommitted changes in your working tree/index. '
