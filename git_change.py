@@ -117,10 +117,10 @@ gflags.DEFINE_bool('merge_commit', False,
                    'review is being created. A change branch will be created and '
                    'git-commit --amend invoked in order to have the commit-msg hook '
                    'add a change ID header. The usual check for unmerged commits is '
-                   'skipped, so be sure the commit being merged all have change ID '
-                   'headers to avoid having Gerrit create a review for each one. '
-                   'Finally, note that the HEAD (merge) commit in the original, '
-                   'tracking branch is removed.'
+                   'skipped, so be sure all of the commits being merged have change '
+                   'ID headers to avoid having Gerrit create a review for each one. '
+                   'Finally, note that the HEAD (merge) commit in the original '
+                   'tracking branch is removed after the change branch is created.'
                    )
 gflags.DEFINE_string('skip', None, 'Comma-separated list of pre-commit checks to skip. '
                      'Options: tests, whitespace, linelength, pep8, pyflakes, jslint or all.')
