@@ -42,7 +42,7 @@ class CleanHook(clean):
                 shutil.rmtree(path)
         if self.all:
             maybe_rm('git_change.egg-info')
-            maybe_rm('sdist')
+            maybe_rm('dist')
 
 
 setup(
