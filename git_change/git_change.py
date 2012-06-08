@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """Git command to create and manage Gerrit changes.
 
 Use git-change to create and manage changes for the Gerrit code review
@@ -81,6 +79,7 @@ print [-r|--reviewers=] [--cc=] [--topic=]
 """
 
 __author__ = 'jacob@nextdoor.com (Jacob Hesch)'
+__version__ = '0.1'
 
 import sys
 import time
@@ -720,5 +719,14 @@ def main(argv):
         exit_error('Unknown subcommand: %s.' % subcommand)
 
 
-if __name__ == '__main__':
-    git.app(sys.argv)
+def app():
+    """Parses flags and starts the application."""
+    FLAGS.UseGnuGetOpt(True)
+    try:
+        argv = FLAGS(sys.argv)
+    except gflags.FlagsError, e:
+        print e
+        usage()
+        sys.exit(1)
+
+    main(argv)
