@@ -1,0 +1,109 @@
+# -*- mode: shell-script; -*-
+
+# Bash completion for Nextdoor git subcommands.
+#
+# This file follows the coding style used in
+# /etc/bash_completion.d/git.
+#
+# Author: jacob@nextdoor.com (Jacob Hesch)
+
+if [ -f /etc/bash_completion.d/git ]; then
+        source /etc/bash_completion.d/git
+fi
+
+_values_not_seen ()
+{
+        seen=$1
+        values=$2
+        for value in $values; do
+                if [[ ! $seen =~ $value ]]; then
+                        echo $value
+                fi
+        done
+}
+
+# For completing multiple option values delimited by comma.
+COMP_WORDBREAKS=${COMP_WORDBREAKS},
+
+_git_change ()
+{
+
+	local cur="${COMP_WORDS[COMP_CWORD]}"
+	local create_opts='--reviewers= --cc= --bug= --message= --topic= --skip=
+                           --fetch --nofetch --switch --noswitch --chain --nochain
+                           --use_head_commit --nouse_head_commit
+                           --merge_commit --nomerge_commit
+                           --fake_push --nofake_push'
+	local update_opts='--reviewers= --cc= --bug=  --skip=
+                           --fake_push --nofake_push'
+	local print_opts='--reviewers= --cc= --topic='
+	local skip_values='tests whitespace linelength pep8 pyflakes jslint all'
+	local subcommands='create update rebase list gc print'
+	local subcommand="$(__git_find_on_cmdline "$subcommands")"
+        local last_opt="--${COMP_LINE##*-}"
+        local eng_usernames_file=~/src/dev_tools/etc/eng-usernames
+        local values eng_usernames
+
+	if [ -z "$subcommand" ]; then
+
+                if [[ $last_opt =~ --(reviewers|cc)= && ! $last_opt =~ ' ' ]]; then
+                        eng_usernames=( $(<$eng_usernames_file ) )
+                        values=$(_values_not_seen "$last_opt" "${eng_usernames[*]}")
+                        cur=${cur#=}
+			COMPREPLY=( $(compgen -W "$values" -- "${cur##,}") )
+                        return 0
+                fi
+
+                if [[ $last_opt =~ --skip= && ! $last_opt =~ ' ' ]]; then
+                        values=$(_values_not_seen "$last_opt" "$skip_values")
+                        cur=${cur#=}
+			COMPREPLY=( $(compgen -W "$values" -- "${cur##*,}") )
+                        return 0
+                fi
+
+		case "$cur" in
+		--*)
+			__gitcomp "$create_opts"
+			;;
+		*)
+			if [ -z "$(__git_find_on_cmdline "$create_opts")" ]; then
+				__gitcomp "$subcommands"
+			else
+				COMPREPLY=()
+			fi
+			;;
+		esac
+	else
+                if [[ $subcommand =~ update|create|print && \
+                    $last_opt =~ --(reviewers|cc)= && ! $last_opt =~ ' ' ]]; then
+                        eng_usernames=( $(<$eng_usernames_file ) )
+                        values=$(_values_not_seen "$last_opt" "${eng_usernames[*]}")
+                        cur=${cur#=}
+			COMPREPLY=( $(compgen -W "$values" -- "${cur##,}") )
+                        return 0
+                fi
+
+                if [[ $subcommand =~ update|create && \
+                    $last_opt =~ --skip= && ! $last_opt =~ ' ' ]]; then
+                        values=$(_values_not_seen "$last_opt" "$skip_values")
+                        cur=${cur#=}
+			COMPREPLY=( $(compgen -W "$values" -- "${cur##*,}") )
+                        return 0
+                fi
+
+		case "$subcommand,$cur" in
+		create,--*)
+			__gitcomp "$create_opts"
+			;;
+		update,--*)
+			__gitcomp "$update_opts"
+			;;
+		print,--*)
+			__gitcomp "$print_opts"
+			;;
+		*)
+			COMPREPLY=()
+			;;
+		esac
+	fi
+}
