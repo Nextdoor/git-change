@@ -28,7 +28,7 @@ import gflags
 gflags.DEFINE_string('remote', 'origin',
                      'Name of the remote repository to fetch from and push to.')
 
-gflags.DEFINE_bool('dry_run', False, 'Echo commands but do not execute them.', short_name='n')
+gflags.DEFINE_bool('dry-run', False, 'Echo commands but do not execute them.', short_name='n')
 
 FLAGS = gflags.FLAGS
 
@@ -105,7 +105,7 @@ def run_command(command, env=None, trap_stdout=False,
             handles from the subprocess will be attached to the
             exception object.
     """
-    if FLAGS.dry_run:
+    if FLAGS['dry-run'].value:
         print 'run_command >>> %s' % command
         return 'dry-run-no-output\n'
 
@@ -186,7 +186,7 @@ def run_command_shell(command, env=None):
     Raises:
         CalledProcessError: The command exited with a non-zero status.
     """
-    if FLAGS.dry_run:
+    if FLAGS['dry-run'].value:
         print 'run_command_shell >>> %s' % command
         return
 
@@ -210,7 +210,7 @@ def get_branch():
     Raises:
         GitError: A valid branch name could not be read.
     """
-    if FLAGS.dry_run:
+    if FLAGS['dry-run'].value:
         return 'fake-branch'
     output = run_command('git symbolic-ref HEAD', trap_stdout=True)
     parts = output.split('/')

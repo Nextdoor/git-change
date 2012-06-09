@@ -36,7 +36,7 @@ the temporary change branches this command creates.
 USAGE
 =====
 
-create [-r|--reviewers=] [--cc=] [-b|--bug=] [-m|--message=] [--topic=] [--[no]fetch] [--[no]switch] [--[no]chain] [--[no]use_head_commit] [--[no]merge_commit [--skip=]
+create [-r|--reviewers=] [--cc=] [-b|--bug=] [-m|--message=] [--topic=] [--[no]fetch] [--[no]switch] [--[no]chain] [--[no]use-head-commit] [--[no]merge-commit [--skip=]
 
     Create a new change and upload to Gerrit. Creating a change is the
     default operation, so omitting the subcommand causes git-change to
@@ -113,7 +113,7 @@ print
 OPTIONS
 =======
 
--n --[no]dry_run
+-n --[no]dry-run
             Echo commands but do not execute them.
             (default: 'false')
 
@@ -133,7 +133,7 @@ OPTIONS
             a temporary change branch. Implies --switch.
             (default: 'false')
 
---[no]fake_push
+--[no]fake-push
             Do everything except for actually pushing the change to
             Gerrit.
             (default: 'false')
@@ -146,7 +146,7 @@ OPTIONS
 -?, --[no]help
             show this help
 
--h, --[no]help_summary
+-h, --[no]help-summary
             Show a short usage message and exit.
             (default: 'false')
 
@@ -156,20 +156,19 @@ OPTIONS
 --[no]helpxml
             like --help, but generates XML output
 
---[no]merge_commit
+--[no]merge-commit
             Create a change for a merge commit. Implies
-
---use_head_commit
-            This flag assumes the current branch is a tracking branch
-            and that the HEAD commit is an unreviewed merge commit for
-            which a review is being created. A change branch will be
-            created and git-commit --amend invoked in order to have
-            the commit-msg hook add a change ID header. The usual
-            check for unmerged commits is skipped, so be sure all of
-            the commits being merged have change ID headers to avoid
-            having Gerrit create a review for each one. Finally, note
-            that the HEAD (merge) commit in the original tracking
-            branch is removed after the change branch is created.
+            `--use-head-commit`.  This flag assumes the current branch
+            is a tracking branch and that the HEAD commit is an
+            unreviewed merge commit for which a review is being
+            created. A change branch will be created and `git-commit
+            --amend` invoked in order to have the commit-msg hook add
+            a change ID header. The usual check for unmerged commits
+            is skipped, so be sure all of the commits being merged
+            have change ID headers to avoid having Gerrit create a
+            review for each one. Finally, note that the HEAD (merge)
+            commit in the original tracking branch is removed after
+            the change branch is created.
             (default: 'false')
 
 -m, --message
@@ -189,7 +188,7 @@ OPTIONS
 
 --topic     Tag the change with the given topic name.
 
---[no]use_head_commit
+--[no]use-head-commit
             Use the HEAD commit as the change to push rather than
             committing staged changes.
             (default: 'false')

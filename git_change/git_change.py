@@ -35,7 +35,7 @@ import git
 
 # Used mainly to provide a usage summary with -h, consistent with
 # other git commands.
-gflags.DEFINE_bool('help_summary', False, 'Show a short usage message and exit.', short_name='h')
+gflags.DEFINE_bool('help-summary', False, 'Show a short usage message and exit.', short_name='h')
 
 gflags.DEFINE_list('reviewers', list(), 'Comma-separated list of reviewers.', short_name='r')
 gflags.DEFINE_list('cc', list(),
@@ -51,11 +51,11 @@ gflags.DEFINE_bool('chain', False,
                    'Chain with the previous Gerrit change. Use when this change depends on '
                    'the previous one. Current branch must be a temporary change branch. '
                    'Implies --switch.')
-gflags.DEFINE_bool('use_head_commit', False,
+gflags.DEFINE_bool('use-head-commit', False,
                    'Use the HEAD commit as the change to push rather than committing '
                    'staged changes.')
-gflags.DEFINE_bool('merge_commit', False,
-                   'Create a change for a merge commit. Implies --use_head_commit. '
+gflags.DEFINE_bool('merge-commit', False,
+                   'Create a change for a merge commit. Implies --use-head-commit. '
                    'This flag assumes the current branch is a tracking branch and '
                    'that the HEAD commit is an unreviewed merge commit for which a '
                    'review is being created. A change branch will be created and '
@@ -68,7 +68,7 @@ gflags.DEFINE_bool('merge_commit', False,
                    )
 gflags.DEFINE_string('skip', None, 'Comma-separated list of pre-commit checks to skip. '
                      'Options: tests, whitespace, linelength, pep8, pyflakes, jslint or all.')
-gflags.DEFINE_bool('fake_push', False,
+gflags.DEFINE_bool('fake-push', False,
                    'Do everything except for actually pushing the change to Gerrit.')
 
 FLAGS = gflags.FLAGS
@@ -88,7 +88,7 @@ def usage(include_flags=True):
                '\n'
                '<create-options>: [-r|--reviewers=] [--cc=] [-b|--bug=] [-m|--message=] '
                '[--topic=] [--[no]fetch] [--[no]switch] [--[no]chain] '
-               '[--[no]use_head_commit] [--[no]merge_commit] [--skip=]\n'
+               '[--[no]use-head-commit] [--[no]merge-commit] [--skip=]\n'
                '\n'
                '<update-options>[-r|--reviewers=] [--cc=] [-b|--bug=] [--skip=]\n'
                '\n'
@@ -176,7 +176,7 @@ def build_push_command(branch):
     command = '%s HEAD:refs/for/%s' % (command, branch)
     if FLAGS.topic:
         command = '%s/%s' % (command, FLAGS.topic)
-    if FLAGS.fake_push:
+    if FLAGS['fake-push'].value:
         print 'Fake pushing'
         command = 'echo %s' % command
     return command
@@ -426,12 +426,12 @@ def commit_staged_changes(original_branch, tmp_branch):
 
 def create_change():
     """Creates a Gerrit code review change."""
-    if not FLAGS.use_head_commit:
+    if not FLAGS['use-head-commit'].value:
         if not git.run_command('git diff --cached --name-status', trap_stdout=True):
             exit_error('You have no staged changes; exiting.\n'
-                       '(You may want to specify --use_head_commit.)', prefix='')
+                       '(You may want to specify --use-head-commit.)', prefix='')
 
-    if FLAGS.merge_commit:
+    if FLAGS['merge-commit'].value:
         check_for_pending_changes()
         sanity_check_merge_commit()
 
@@ -447,7 +447,7 @@ def create_change():
     # original_branch is a tracking branch (i.e. if --chain is false).
     # The check is skipped in the case of a merge commit change, which
     # will likely have many (expected) unmerged commits.
-    if not FLAGS.chain and not FLAGS.merge_commit:
+    if not FLAGS.chain and not FLAGS['merge-commit'].value:
         if check_unmerged_commits(original_branch):
             sys.exit(1)
 
@@ -456,12 +456,12 @@ def create_change():
     tmp_branch = 'tmp-change-%s' % time.time()
     git.run_command('git checkout -b %s' % tmp_branch, trap_stdout=True)
 
-    if not FLAGS.use_head_commit:
+    if not FLAGS['use-head-commit'].value:
         commit_staged_changes(original_branch, tmp_branch)
 
     # Now rename the branch according to the change ID.
     change_id = get_change_id_from_head()
-    if FLAGS.use_head_commit and change_id is None:
+    if FLAGS['use-head-commit'].value and change_id is None:
         # Amend the HEAD commit in order to force running the
         # commit-msg hook, which should insert a Change-Id header.
         commit_change(['--amend'])
@@ -487,7 +487,7 @@ def create_change():
         git.run_command('git branch -d %s' % new_branch)
         sys.exit(e.returncode)
 
-    if FLAGS.merge_commit:
+    if FLAGS['merge-commit'].value:
         # Remove the merge commit from the original branch to avoid
         # duplicating the commit in case the version of that commit in
         # the change branch is amended (i.e., its SHA1 hash changed).
@@ -631,13 +631,13 @@ def print_push_command():
 
 
 def main(argv):
-    if FLAGS.help_summary:
+    if FLAGS['help-summary'].value:
         usage(include_flags=False)
         sys.exit()
 
-    # --merge_commit implies --use_head_commit.
-    if FLAGS.merge_commit:
-        FLAGS.use_head_commit = True
+    # --merge-commit implies --use-head-commit.
+    if FLAGS['merge-commit'].value:
+        FLAGS['use-head-commit'].value = True
 
     argc = len(argv)
     if argc > 2:
