@@ -639,6 +639,9 @@ def main(argv):
     if FLAGS['merge-commit'].value:
         FLAGS['use-head-commit'].value = True
 
+    # Fail gracefully if run outside a git repository.
+    git.run_command_or_die('git status')
+
     argc = len(argv)
     if argc > 2:
         usage(include_flags=False)
