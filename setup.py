@@ -51,7 +51,7 @@ setup(
     description='git command to create and manage Gerrit changes',
     long_description=open('README.rst').read(),
     author='Jacob Hesch',
-    author_email='jacob+git-change@nextdoor.com',
+    author_email='jacob@nextdoor.com',
     url='https://github.com/Nextdoor/git-change',
     license='Apache License, Version 2.0',
     keywords='gerrit git code review',
