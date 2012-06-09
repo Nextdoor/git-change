@@ -14,14 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Bash completion for Nextdoor git subcommands.
-#
-# This file follows the coding style used in
-# /etc/bash_completion.d/git.
+# Bash completion for git-change.
 #
 # Author: jacob@nextdoor.com (Jacob Hesch)
 
-if [ -f /etc/bash_completion.d/git ]; then
+if [[ -f /etc/bash_completion.d/git ]]; then
         source /etc/bash_completion.d/git
 fi
 
@@ -55,14 +52,14 @@ _git_change ()
 	local subcommands='create update rebase list gc print'
 	local subcommand="$(__git_find_on_cmdline "$subcommands")"
         local last_opt="--${COMP_LINE##*-}"
-        local eng_usernames_file=~/src/dev_tools/etc/eng-usernames
-        local values eng_usernames
+        local reviewers_file=${GIT_CHANGE_REVIEWERS_FILE:-/dev/null}
+        local values reviewers
 
 	if [ -z "$subcommand" ]; then
 
                 if [[ $last_opt =~ --(reviewers|cc)= && ! $last_opt =~ ' ' ]]; then
-                        eng_usernames=( $(<$eng_usernames_file ) )
-                        values=$(_values_not_seen "$last_opt" "${eng_usernames[*]}")
+                        reviewers=( $(<$reviewers_file ) )
+                        values=$(_values_not_seen "$last_opt" "${reviewers[*]}")
                         cur=${cur#=}
 			COMPREPLY=( $(compgen -W "$values" -- "${cur##,}") )
                         return 0
@@ -90,8 +87,8 @@ _git_change ()
 	else
                 if [[ $subcommand =~ update|create|print && \
                     $last_opt =~ --(reviewers|cc)= && ! $last_opt =~ ' ' ]]; then
-                        eng_usernames=( $(<$eng_usernames_file ) )
-                        values=$(_values_not_seen "$last_opt" "${eng_usernames[*]}")
+                        reviewers=( $(<$reviewers_file ) )
+                        values=$(_values_not_seen "$last_opt" "${reviewers[*]}")
                         cur=${cur#=}
 			COMPREPLY=( $(compgen -W "$values" -- "${cur##,}") )
                         return 0
