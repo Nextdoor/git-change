@@ -26,11 +26,11 @@ SYNOPSIS
 DESCRIPTION
 ===========
 
-Use git-change to create and manage changes for the Gerrit code review
-tool. The default behavior is to create a new change. There are
-subcommands to manage the change at later stages, including uploading
-a new patch set, rebasing, and garbage-collecting the temporary change
-branches this command creates.
+Use git-change to create and manage changes for the **Gerrit Code
+Review** [1] tool. The default behavior is to create a new
+change. There are subcommands to manage the change at later stages,
+including uploading a new patch set, rebasing, and garbage-collecting
+the temporary change branches this command creates.
 
 
 USAGE
@@ -208,4 +208,10 @@ OPTIONS
 SEE ALSO
 ========
 
-git-commit(1), git-merge(1), git-rebase(1)
+git(1), git-commit(1), git-merge(1), git-rebase(1)
+
+
+NOTES
+=====
+
+1. Gerrit Code Review: http://code.google.com/p/gerrit/
