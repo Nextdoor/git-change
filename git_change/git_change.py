@@ -301,7 +301,7 @@ def commit_change(args=None):
     """Commits the staged change.
 
     Runs 'git commit' to commit the staged change. If a bug number was
-    specified in a flag, sets the ND_BUG_ID environment variable so
+    specified in a flag, sets the BUG_ID environment variable so
     the prepare-commit-msg hook can inject the bug ID into the commit
     message.
 
@@ -315,7 +315,7 @@ def commit_change(args=None):
     """
     env = {}
     if FLAGS.bug is not None:
-        env.update({'ND_BUG_ID': FLAGS.bug})
+        env.update({'BUG_ID': FLAGS.bug})
     if FLAGS.skip is not None:
         env.update({'SKIP': FLAGS.skip})
     command = 'git commit'
