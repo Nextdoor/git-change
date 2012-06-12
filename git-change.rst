@@ -39,8 +39,8 @@ USAGE
 create [-r|--reviewers=] [--cc=] [-b|--bug=] [-m|--message=] [--topic=] [--fetch] [--switch] [--chain] [--use-head-commit] [--merge-commit [--skip=]
 
     Create a new change and upload to Gerrit. Creating a change is the
-    default operation, so omitting the subcommand causes git-change to
-    behave as if "create" had been specified.
+    default operation, so omitting the subcommand causes `git-change`
+    to behave as if `create` had been specified.
 
     The files that make up the change must be staged for commit. Those
     staged changes will be committed in a new temporary branch meant
@@ -68,10 +68,6 @@ create [-r|--reviewers=] [--cc=] [-b|--bug=] [-m|--message=] [--topic=] [--fetch
     is a timestamp of as a floating point number expressed in seconds
     since the epoch. In this case the change branch must be manually
     deleted and the change creation must be retried.
-
-    Create a new change and upload to Gerrit. Creating a change is the
-    default operation, so omitting the subcommand causes git-change to
-    behave as if "create" had been specified.
 
 update [-r|--reviewers=] [--cc=] [-b|--bug=] [--skip=]
 
@@ -116,19 +112,20 @@ OPTIONS
 --remote    Name of the remote repository to fetch from and push to.
             (default: 'origin')
 
--b, --bug   Bug ID to include in the commit message header.
+-b, --bug   Bug ID to include in the commit message header. This
+            option causes `git-change` to set the BUG_ID environment
+            variable to the given ID before invoking `git-commit` so
+            that a git hook can add it as a commit message header.
 
 --cc        Comma-separated list of addresses to copy on change notification
             mails.
 
---chain
-            Chain with the previous Gerrit change. Use when this
+--chain     Chain with the previous Gerrit change. Use when this
             change depends on the previous one. Current branch must be
             a temporary change branch. Implies --switch.
 
---fetch
-            Run git-fetch so that remote branch is in sync with the central
-            repository.
+--fetch     Run `git-fetch` so that remote branch is in sync with
+            the central repository.
 
 --merge-commit
             Create a change for a merge commit. Implies
@@ -150,11 +147,14 @@ OPTIONS
 -r, --reviewers
             Comma-separated list of reviewers.
 
---skip      Comma-separated list of pre-commit checks to skip. Options: tests,
-            whitespace, linelength, pep8, pyflakes, jslint or all.
+--skip      Comma-separated list of pre-commit checks to skip. Option
+            values: tests, whitespace, linelength, pep8, pyflakes,
+            jslint or all. This option assumes that a pre-commit hook
+            runs the checks, and causes `git-change` to set the SKIP
+            environment variable to the given list of checks before
+            invoking `git-commit` so that the hook can skip them.
 
---switch
-            Switch to the temporary change branch after creating it.
+--switch    Switch to the temporary change branch after creating it.
 
 --topic     Tag the change with the given topic name.
 
@@ -166,7 +166,7 @@ OPTIONS
 SEE ALSO
 ========
 
-git(1), git-commit(1), git-merge(1), git-rebase(1)
+git(1), git-commit(1), git-merge(1), git-rebase(1), git-fetch(1), githooks(1)
 
 
 NOTES
