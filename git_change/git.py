@@ -267,13 +267,13 @@ def search_gerrit(query):
            'lastUpdated': 1330051281,
            'number': '45',
            'open': True,
-           'owner': {'email': 'jacob@nextdoor.com', 'name': 'Jacob Hesch'},
-           'project': 'nextdoor.com',
+           'owner': {'email': 'ace@example.com', 'name': 'Ace Hacker'},
+           'project': 'fooproj',
            'sortKey': '001b45410000002d',
            'status': 'NEW',
-           'subject': 'Okeydokey',
+           'subject': 'Log interesting events',
            'trackingIds': [{'id': '442', 'system': 'Bugzilla'}],
-           'url': 'http://review.nextdoortest.com/45'}],
+           'url': 'http://review.example.com/45'}],
          {'rowCount': 1, 'runTimeMilliseconds': 10, 'type': 'stats'})
     """
     results = []
