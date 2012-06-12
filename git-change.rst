@@ -113,10 +113,6 @@ print
 OPTIONS
 =======
 
--n --dry-run
-            Echo commands but do not execute them.
-            (default: 'false')
-
 --remote    Name of the remote repository to fetch from and push to.
             (default: 'origin')
 
@@ -133,18 +129,9 @@ OPTIONS
             a temporary change branch. Implies --switch.
             (default: 'false')
 
---fake-push
-            Do everything except for actually pushing the change to
-            Gerrit.
-            (default: 'false')
-
 --fetch
             Run git-fetch so that remote branch is in sync with the central
             repository.
-            (default: 'false')
-
--h, --help-summary
-            Show a short usage message and exit.
             (default: 'false')
 
 --merge-commit
