@@ -143,18 +143,9 @@ OPTIONS
             repository.
             (default: 'false')
 
--?, --[no]help
-            show this help
-
 -h, --[no]help-summary
             Show a short usage message and exit.
             (default: 'false')
-
---[no]helpshort
-            show usage only for this module
-
---[no]helpxml
-            like --help, but generates XML output
 
 --[no]merge-commit
             Create a change for a merge commit. Implies
@@ -192,16 +183,6 @@ OPTIONS
             Use the HEAD commit as the change to push rather than
             committing staged changes.
             (default: 'false')
-
---flagfile  Insert flag definitions from the given file into the command line.
-            (default: '')
-
---undefok
-            comma-separated list of flag names that it is okay to
-            specify on the command line even if the program does not
-            define a flag with that name.  IMPORTANT: flags in this
-            list that have arguments MUST use the --flag=value format.
-            (default: '')
 
 
 SEE ALSO
