@@ -110,7 +110,8 @@ OPTIONS
 =======
 
 --remote    Name of the remote repository to fetch from and push to.
-            (default: 'origin')
+            Defaults to the `git-change.remote` git config option if
+            it is set, otherwise 'origin'.
 
 -b, --bug   Bug ID to include in the commit message header. This
             option causes `git-change` to set the BUG_ID environment
@@ -166,7 +167,7 @@ OPTIONS
 SEE ALSO
 ========
 
-git(1), git-commit(1), git-merge(1), git-rebase(1), git-fetch(1), githooks(1)
+git(1), git-commit(1), git-merge(1), git-rebase(1), git-fetch(1), git-config(1), githooks(1)
 
 
 NOTES

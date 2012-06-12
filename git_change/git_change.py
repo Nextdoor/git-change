@@ -635,6 +635,13 @@ def main(argv):
         usage(include_flags=False)
         sys.exit()
 
+    # Get remote from command-line flag or config option, otherwise
+    # fall back to flag default.
+    if not FLAGS['remote'].present:
+        remote = git.get_config_option('git-change.remote')
+        if remote is not None:
+            FLAGS.remote = remote
+
     # --merge-commit implies --use-head-commit.
     if FLAGS['merge-commit'].value:
         FLAGS['use-head-commit'].value = True

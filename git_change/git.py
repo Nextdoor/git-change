@@ -200,6 +200,23 @@ def run_command_shell(command, env=None):
         raise CalledProcessError(status, command)
 
 
+def get_config_option(name):
+    """Returns the config value identified by name.
+
+    Args:
+        name: A string representing the desired config option.
+
+    Returns:
+        A string representing the value of the desired config option
+        or None if the option was not found.
+    """
+    try:
+        return run_command('git config --get %s' % name,
+                           trap_stdout=True, output_on_error=False).strip()
+    except CalledProcessError:
+        return None
+
+
 def get_branch():
     """Returns the current git branch name.
 
