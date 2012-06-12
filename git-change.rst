@@ -120,19 +120,15 @@ OPTIONS
 
 --cc        Comma-separated list of addresses to copy on change notification
             mails.
-            (default: '')
-            (a comma separated list)
 
 --chain
             Chain with the previous Gerrit change. Use when this
             change depends on the previous one. Current branch must be
             a temporary change branch. Implies --switch.
-            (default: 'false')
 
 --fetch
             Run git-fetch so that remote branch is in sync with the central
             repository.
-            (default: 'false')
 
 --merge-commit
             Create a change for a merge commit. Implies
@@ -147,29 +143,24 @@ OPTIONS
             review for each one. Finally, note that the HEAD (merge)
             commit in the original tracking branch is removed after
             the change branch is created.
-            (default: 'false')
 
 -m, --message
             Use the given message as the commit message.
 
 -r, --reviewers
             Comma-separated list of reviewers.
-            (default: '')
-            (a comma separated list)
 
 --skip      Comma-separated list of pre-commit checks to skip. Options: tests,
             whitespace, linelength, pep8, pyflakes, jslint or all.
 
 --switch
             Switch to the temporary change branch after creating it.
-            (default: 'false')
 
 --topic     Tag the change with the given topic name.
 
 --use-head-commit
             Use the HEAD commit as the change to push rather than
             committing staged changes.
-            (default: 'false')
 
 
 SEE ALSO
