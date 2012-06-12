@@ -25,7 +25,14 @@ import sys
 import gflags
 
 gflags.DEFINE_string('remote', 'origin',
-                     'Name of the remote repository to fetch from and push to.')
+                     'Name of the remote repository to fetch from and push to. '
+                     'Defaults to the `git-change.remote` git config option if '
+                     'it is set, otherwise "origin".')
+gflags.DEFINE_string('gerrit-ssh-host', None,
+                     'Name of the Gerrit server hosting the Git repository. '
+                     'Defaults to the `git-change.gerrit-host` git config '
+                     'option if it is set. Required unless the config '
+                     'option is set.')
 
 gflags.DEFINE_bool('dry-run', False, 'Echo commands but do not execute them.', short_name='n')
 
@@ -271,7 +278,8 @@ def search_gerrit(query):
     """
     results = []
     stats = None
-    response = run_command('ssh review gerrit query --format=JSON %s' % query, trap_stdout=True)
+    response = run_command('ssh %s gerrit query --format=JSON %s' %
+                           (FLAGS['gerrit-ssh-host'].value, query), trap_stdout=True)
     for line in response.split('\n'):
         if not line:
             continue

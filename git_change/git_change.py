@@ -64,8 +64,7 @@ gflags.DEFINE_bool('merge-commit', False,
                    'skipped, so be sure all of the commits being merged have change '
                    'ID headers to avoid having Gerrit create a review for each one. '
                    'Finally, note that the HEAD (merge) commit in the original '
-                   'tracking branch is removed after the change branch is created.'
-                   )
+                   'tracking branch is removed after the change branch is created.')
 gflags.DEFINE_string('skip', None, 'Comma-separated list of pre-commit checks to skip. '
                      'Options: tests, whitespace, linelength, pep8, pyflakes, jslint or all.')
 gflags.DEFINE_bool('fake-push', False,
@@ -641,6 +640,15 @@ def main(argv):
         remote = git.get_config_option('git-change.remote')
         if remote is not None:
             FLAGS.remote = remote
+
+    # Get Gerrit ssh host from command-line flag or config option,
+    # otherwise exit with an error.
+    gerrit_ssh_host = FLAGS['gerrit-ssh-host']
+    if not gerrit_ssh_host.present:
+        gerrit_ssh_host.value = git.get_config_option('git-change.gerrit-ssh-host')
+    if gerrit_ssh_host.value is None:
+        exit_error('Please define git config option "git-change.gerrit-ssh-host" '
+                   'or pass --gerrit-ssh-host.')
 
     # --merge-commit implies --use-head-commit.
     if FLAGS['merge-commit'].value:

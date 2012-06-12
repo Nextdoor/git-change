@@ -113,6 +113,12 @@ OPTIONS
             Defaults to the `git-change.remote` git config option if
             it is set, otherwise 'origin'.
 
+--gerrit-ssh-host
+            Name of the Gerrit server hosting the Git repository.
+            Defaults to the `git-change.gerrit-host` git config
+            option if it is set. Required unless the config
+            option is set.
+
 -b, --bug   Bug ID to include in the commit message header. This
             option causes `git-change` to set the BUG_ID environment
             variable to the given ID before invoking `git-commit` so
