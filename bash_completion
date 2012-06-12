@@ -41,12 +41,9 @@ _git_change ()
 
 	local cur="${COMP_WORDS[COMP_CWORD]}"
 	local create_opts='--reviewers= --cc= --bug= --message= --topic= --skip=
-                           --fetch --nofetch --switch --noswitch --chain --nochain
-                           --use-head-commit --nouse-head-commit
-                           --merge-commit --nomerge-commit
-                           --fake-push --nofake-push'
-	local update_opts='--reviewers= --cc= --bug=  --skip=
-                           --fake-push --nofake-push'
+                           --fetch --switch --chain --use-head-commit
+                           --merge-commit --fake-push'
+	local update_opts='--reviewers= --cc= --bug=  --skip= --fake-push'
 	local print_opts='--reviewers= --cc= --topic='
 	local skip_values='tests whitespace linelength pep8 pyflakes jslint all'
 	local subcommands='create update rebase list gc print'

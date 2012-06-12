@@ -36,7 +36,7 @@ the temporary change branches this command creates.
 USAGE
 =====
 
-create [-r|--reviewers=] [--cc=] [-b|--bug=] [-m|--message=] [--topic=] [--[no]fetch] [--[no]switch] [--[no]chain] [--[no]use-head-commit] [--[no]merge-commit [--skip=]
+create [-r|--reviewers=] [--cc=] [-b|--bug=] [-m|--message=] [--topic=] [--fetch] [--switch] [--chain] [--use-head-commit] [--merge-commit [--skip=]
 
     Create a new change and upload to Gerrit. Creating a change is the
     default operation, so omitting the subcommand causes git-change to
@@ -113,7 +113,7 @@ print
 OPTIONS
 =======
 
--n --[no]dry-run
+-n --dry-run
             Echo commands but do not execute them.
             (default: 'false')
 
@@ -127,27 +127,27 @@ OPTIONS
             (default: '')
             (a comma separated list)
 
---[no]chain
+--chain
             Chain with the previous Gerrit change. Use when this
             change depends on the previous one. Current branch must be
             a temporary change branch. Implies --switch.
             (default: 'false')
 
---[no]fake-push
+--fake-push
             Do everything except for actually pushing the change to
             Gerrit.
             (default: 'false')
 
---[no]fetch
+--fetch
             Run git-fetch so that remote branch is in sync with the central
             repository.
             (default: 'false')
 
--h, --[no]help-summary
+-h, --help-summary
             Show a short usage message and exit.
             (default: 'false')
 
---[no]merge-commit
+--merge-commit
             Create a change for a merge commit. Implies
             `--use-head-commit`.  This flag assumes the current branch
             is a tracking branch and that the HEAD commit is an
@@ -173,13 +173,13 @@ OPTIONS
 --skip      Comma-separated list of pre-commit checks to skip. Options: tests,
             whitespace, linelength, pep8, pyflakes, jslint or all.
 
---[no]switch
+--switch
             Switch to the temporary change branch after creating it.
             (default: 'false')
 
 --topic     Tag the change with the given topic name.
 
---[no]use-head-commit
+--use-head-commit
             Use the HEAD commit as the change to push rather than
             committing staged changes.
             (default: 'false')
