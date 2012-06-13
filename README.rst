@@ -209,6 +209,12 @@ environment variable is set. ``git-commit create`` sets ``BUG_ID`` if
 you pass it the ``--bug`` option.
 
 
+Bugs
+----
+
+Please report bugs on the GitHub `issues page`_.
+
+
 Contributing
 ------------
 
@@ -224,6 +230,7 @@ The folks at OpenStack_ maintain a similar tool called `git-review`_.
 
 .. _Gerrit Code Review: http://code.google.com/p/gerrit/
 .. _Python Package Index: http://pypi.python.org/pypi/git-change
+.. _issues page: https://github.com/Nextdoor/git-change/issues
 .. _GitHub repository: https://github.com/Nextdoor/git-change
 .. _virtualenv: http://www.virtualenv.org/
 .. _OpenStack: http://openstack.org/
