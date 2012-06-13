@@ -605,8 +605,8 @@ def submit_change():
 
     commit = git.run_command('git rev-parse --verify HEAD', trap_stdout=True)
     project = change['project']
-    git.run_command('ssh %s gerrit review --project %s --submit %s' %
-                    (FLAGS['gerrit-ssh-host'].value, project, commit))
+    git.run_command_or_die('ssh %s gerrit review --project %s --submit %s' %
+                           (FLAGS['gerrit-ssh-host'].value, project, commit))
 
 
 def garbage_collect():
