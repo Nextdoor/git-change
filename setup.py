@@ -61,6 +61,7 @@ setup(
     },
     data_files=[
         ('man/man1', ['git-change.1']),
+        ('etc/bash_completion.d', ['extras/bash_completion.d/git-change']),
     ],
     install_requires=[
         'python-gflags',

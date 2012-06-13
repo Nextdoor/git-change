@@ -173,16 +173,21 @@ following extras:
 Bash completion
 ~~~~~~~~~~~~~~~
 
-This package includes a Bash completion script (``bash_completion``)
-that completes command line option names and values. It depends on the
-completion script that ships with Git. On Debian/Ubuntu systems, the
-``git`` package installs it as ``/etc/bash_completion.d/git``.
+This package includes a Bash completion script that completes command
+line option names and values. It depends on the completion script that
+ships with Git. On Debian/Ubuntu systems, the ``git`` package installs
+that script as ``/etc/bash_completion.d/git``.
 
 Add the following lines to your Bash init file (e.g., ``~/.bashrc``),
 adjusting the paths as necessary for your system: ::
 
     source /etc/bash_completion.d/git
-    source bash_completion
+    source extras/bash_completion.d/git-change
+
+If you use `virtualenv`_, you can source the `git-change` completion
+script as follows: ::
+
+    source $VIRTUAL_ENV/etc/bash_completion.d/git-change
 
 You can also define a list of reviewers in your organization so that
 their names appear as completion candidates for options like
@@ -220,6 +225,7 @@ The folks at OpenStack_ maintain a similar tool called `git-review`_.
 .. _Gerrit Code Review: http://code.google.com/p/gerrit/
 .. _Python Package Index: http://pypi.python.org/pypi/git-change
 .. _GitHub repository: https://github.com/Nextdoor/git-change
+.. _virtualenv: http://www.virtualenv.org/
 .. _OpenStack: http://openstack.org/
 .. _git-review: https://github.com/openstack-ci/git-review
 .. _Nextdoor: http://www.nextdoor.com/
