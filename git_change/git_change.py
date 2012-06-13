@@ -44,6 +44,8 @@ gflags.DEFINE_string('bug', None, 'Bug ID to include in the commit message heade
 gflags.DEFINE_string('message', None, 'Use the given message as the commit message.',
                      short_name='m')
 gflags.DEFINE_string('topic', None, 'Tag the change with the given topic name.')
+gflags.DEFINE_string('skip', None, 'Comma-separated list of pre-commit checks to skip. '
+                     'Options: tests, whitespace, linelength, pep8, pyflakes, jslint or all.')
 gflags.DEFINE_bool('fetch', False,
                    'Run git-fetch so that remote branch is in sync with the central repository.')
 gflags.DEFINE_bool('switch', False, 'Switch to the temporary change branch after creating it.')
@@ -65,8 +67,6 @@ gflags.DEFINE_bool('merge-commit', False,
                    'ID headers to avoid having Gerrit create a review for each one. '
                    'Finally, note that the HEAD (merge) commit in the original '
                    'tracking branch is removed after the change branch is created.')
-gflags.DEFINE_string('skip', None, 'Comma-separated list of pre-commit checks to skip. '
-                     'Options: tests, whitespace, linelength, pep8, pyflakes, jslint or all.')
 gflags.DEFINE_bool('fake-push', False,
                    'Do everything except for actually pushing the change to Gerrit.')
 

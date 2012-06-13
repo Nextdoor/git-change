@@ -37,7 +37,7 @@ the temporary change branches this command creates.
 USAGE
 =====
 
-create [-r|--reviewers=] [--cc=] [-b|--bug=] [-m|--message=] [--topic=] [--fetch] [--switch] [--chain] [--use-head-commit] [--merge-commit [--skip=]
+create [-r|--reviewers=] [--cc=] [-b|--bug=] [-m|--message=] [--topic=] [--skip=] [--fetch] [--switch] [--chain] [--use-head-commit] [--merge-commit]
 
     Create a new change and upload to Gerrit. Creating a change is the
     default operation, so omitting the subcommand causes `git-change`
@@ -115,30 +115,45 @@ print [-r|--reviewers=] [--cc=] [-b|--bug=]
 OPTIONS
 =======
 
---remote    Name of the remote repository to fetch from and push to.
-            Defaults to the `git-change.remote` git config option if
-            it is set, otherwise 'origin'.
+-r <addresses>, --reviewers=<addresses>
+            Comma-separated list of reviewers.
 
---gerrit-ssh-host
-            Name of the Gerrit server hosting the Git repository.
-            Defaults to the `git-change.gerrit-host` git config
-            option if it is set. Required unless the config
-            option is set.
+--cc=<addresses>
+            Comma-separated list of addresses to copy on change notification
+            mails.
 
--b, --bug   Bug ID to include in the commit message header. This
+-b <bug-id>, --bug=<bug-id>
+            Bug ID to include in the commit message header. This
             option causes `git-change` to set the BUG_ID environment
             variable to the given ID before invoking `git-commit` so
             that a git hook can add it as a commit message header.
 
---cc        Comma-separated list of addresses to copy on change notification
-            mails.
+-m <msg>, --message=<msg>
+            Use the given message as the commit message.
+
+--topic=<topic>
+            Tag the change with the given topic name.
+
+--skip=<checks>
+            Comma-separated list of pre-commit checks to skip. Option
+            values: tests, whitespace, linelength, pep8, pyflakes,
+            jslint or all. This option assumes that a pre-commit hook
+            runs the checks, and causes `git-change` to set the SKIP
+            environment variable to the given list of checks before
+            invoking `git-commit` so that the hook can skip them.
+
+--fetch     Run `git-fetch` so that remote branch is in sync with
+            the central repository.
+
+--switch    Switch to the temporary change branch after creating it.
 
 --chain     Chain with the previous Gerrit change. Use when this
             change depends on the previous one. Current branch must be
             a temporary change branch. Implies --switch.
 
---fetch     Run `git-fetch` so that remote branch is in sync with
-            the central repository.
+--use-head-commit
+            Use the HEAD commit as the change to push rather than
+            committing staged changes.
 
 --merge-commit
             Create a change for a merge commit. Implies
@@ -154,26 +169,16 @@ OPTIONS
             commit in the original tracking branch is removed after
             the change branch is created.
 
--m, --message
-            Use the given message as the commit message.
+--remote=<remote>
+            Name of the remote repository to fetch from and push to.
+            Defaults to the `git-change.remote` git config option if
+            it is set, otherwise 'origin'.
 
--r, --reviewers
-            Comma-separated list of reviewers.
-
---skip      Comma-separated list of pre-commit checks to skip. Option
-            values: tests, whitespace, linelength, pep8, pyflakes,
-            jslint or all. This option assumes that a pre-commit hook
-            runs the checks, and causes `git-change` to set the SKIP
-            environment variable to the given list of checks before
-            invoking `git-commit` so that the hook can skip them.
-
---switch    Switch to the temporary change branch after creating it.
-
---topic     Tag the change with the given topic name.
-
---use-head-commit
-            Use the HEAD commit as the change to push rather than
-            committing staged changes.
+--gerrit-ssh-host=<host>
+            Name of the Gerrit server hosting the Git repository.
+            Defaults to the `git-change.gerrit-host` git config
+            option if it is set. Required unless the config
+            option is set.
 
 
 SEE ALSO
