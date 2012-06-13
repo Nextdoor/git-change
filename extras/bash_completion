@@ -46,7 +46,7 @@ _git_change ()
 	local update_opts='--reviewers= --cc= --bug=  --skip='
 	local print_opts='--reviewers= --cc= --topic='
 	local skip_values='tests whitespace linelength pep8 pyflakes jslint all'
-	local subcommands='create update rebase list gc print'
+	local subcommands='create update rebase list submit gc print'
 	local subcommand="$(__git_find_on_cmdline "$subcommands")"
         local last_opt="--${COMP_LINE##*-}"
         local reviewers_file=${GIT_CHANGE_REVIEWERS_FILE:-/dev/null}

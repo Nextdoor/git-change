@@ -19,6 +19,7 @@ SYNOPSIS
 | `git change` update [<update-options>]
 | `git change` rebase
 | `git change` list
+| `git change` submit
 | `git change` gc
 | `git change` print [<print-options>]
 
@@ -95,6 +96,11 @@ list
 
     List all temporary change branches and display a menu to check one
     of them out.
+
+submit
+
+    Submit the code review associated with the current change branch
+    to Gerrit.
 
 gc
 

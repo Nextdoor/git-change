@@ -83,6 +83,7 @@ def usage(include_flags=True):
                '   or: git change update [<update-options>]\n'
                '   or: git change rebase\n'
                '   or: git change list\n'
+               '   or: git change submit\n'
                '   or: git change gc\n'
                '\n'
                '<create-options>: [-r|--reviewers=] [--cc=] [-b|--bug=] [-m|--message=] '
@@ -595,6 +596,19 @@ def list_change_branches():
         pass  # User hit enter; just exit.
 
 
+def submit_change():
+    """Submits the existing change to Gerrit."""
+    change_id = check_for_change_branch()
+    change = get_change(change_id)
+    if not change['open']:
+        exit_error('Change %s is no longer open.' % change_id)
+
+    commit = git.run_command('git rev-parse --verify HEAD', trap_stdout=True)
+    project = change['project']
+    git.run_command('ssh %s gerrit review --project %s --submit %s' %
+                    (FLAGS['gerrit-ssh-host'].value, project, commit))
+
+
 def garbage_collect():
     """Removes temporary change branches which are fully merged."""
     unmerged_branches = []
@@ -674,6 +688,8 @@ def main(argv):
         rebase()
     elif subcommand == 'list':
         list_change_branches()
+    elif subcommand == 'submit':
+        submit_change()
     elif subcommand == 'gc':
         garbage_collect()
     elif subcommand == 'print':
