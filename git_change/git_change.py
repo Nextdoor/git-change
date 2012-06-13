@@ -198,7 +198,7 @@ def check_unmerged_commits(branch):
         remote branch. False if not, or if the user elected to proceed
         anyway.
     """
-    output = git.run_command('git log --oneline %s ^%s/%s' % (branch, FLAGS.remote, branch),
+    output = git.run_command('git log --oneline %s ^%s/%s --' % (branch, FLAGS.remote, branch),
                              trap_stdout=True)
     if not output or FLAGS.dry_run:
         return False
@@ -580,7 +580,7 @@ def list_change_branches():
     i = 0
     for branch in branches:
         i += 1
-        output = git.run_command('git log --oneline -1 %s' % branch, trap_stdout=True)
+        output = git.run_command('git log --oneline -1 %s --' % branch, trap_stdout=True)
         sys.stdout.write('{0:>2}. {1} {2}'.format(i, branch, output))
     try:
         selection = raw_input('\nSelect a branch number to check out, '
