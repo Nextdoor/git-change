@@ -126,7 +126,7 @@ OPTIONS
             Bug ID to include in the commit message header. This
             option causes `git-change` to set the BUG_ID environment
             variable to the given ID before invoking `git-commit` so
-            that a git hook can add it as a commit message header.
+            that a Git hook can add it as a commit message header.
 
 -m <msg>, --message=<msg>
             Use the given message as the commit message.
@@ -171,12 +171,12 @@ OPTIONS
 
 --remote=<remote>
             Name of the remote repository to fetch from and push to.
-            Defaults to the `git-change.remote` git config option if
+            Defaults to the `git-change.remote` Git config option if
             it is set, otherwise 'origin'.
 
 --gerrit-ssh-host=<host>
             Name of the Gerrit server hosting the Git repository.
-            Defaults to the `git-change.gerrit-host` git config
+            Defaults to the `git-change.gerrit-host` Git config
             option if it is set. Required unless the config
             option is set.
 

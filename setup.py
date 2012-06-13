@@ -48,7 +48,7 @@ class CleanHook(clean):
 setup(
     name='git-change',
     version=__import__(PACKAGE).__version__,
-    description='git command to create and manage Gerrit changes',
+    description='Git command to create and manage Gerrit changes',
     long_description=open('README.rst').read(),
     author='Jacob Hesch',
     author_email='jacob@nextdoor.com',
