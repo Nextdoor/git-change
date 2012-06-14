@@ -6,9 +6,11 @@
 Git command to create and manage Gerrit changes
 -----------------------------------------------
 
+.. |date| date::
+.. include:: version.rst
+
 :Author: Jacob Hesch <jacob@nextdoor.com>
-:Date: 2012-06-07
-:Version: 1.0
+:Date: |date|
 :Manual section: 1
 
 
