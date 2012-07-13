@@ -200,7 +200,7 @@ def check_unmerged_commits(branch):
     """
     output = git.run_command('git log --oneline %s ^%s/%s --' % (branch, FLAGS.remote, branch),
                              trap_stdout=True)
-    if not output or FLAGS.dry_run:
+    if not output or FLAGS['dry-run'].value:
         return False
 
     print 'Your branch %s is ahead of its remote by the following %s commit(s):\n' % (
