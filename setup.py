@@ -21,7 +21,7 @@ from distutils.command.sdist import sdist
 from setuptools import setup
 
 PACKAGE = 'git_change'
-VERSION = __import__(PACKAGE).__version__
+VERSION = '0.1.0'
 
 class SourceDistHook(sdist):
 
