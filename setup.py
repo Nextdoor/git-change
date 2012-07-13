@@ -58,6 +58,7 @@ setup(
     author='Jacob Hesch',
     author_email='jacob@nextdoor.com',
     url='https://github.com/Nextdoor/git-change',
+    download_url='http://pypi.python.org/pypi/git-change#downloads',
     license='Apache License, Version 2.0',
     keywords='gerrit git code review',
     packages=[PACKAGE],
