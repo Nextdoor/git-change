@@ -28,9 +28,11 @@ class SourceDistHook(sdist):
     def run(self):
         with open('version.rst', 'w') as f:
             f.write(':Version: %s\n' % VERSION)
+        shutil.copy('README.rst', 'README')
         subprocess.call(['rst2man', 'git-change.rst', 'git-change.1'])
         sdist.run(self)
         os.unlink('MANIFEST')
+        os.unlink('README')
         os.unlink('git-change.1')
         os.unlink('version.rst')
 
