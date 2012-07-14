@@ -21,13 +21,13 @@ from distutils.command.sdist import sdist
 from setuptools import setup
 
 PACKAGE = 'git_change'
-VERSION = '0.1.0'
+execfile(os.path.join(PACKAGE, 'version.py'))  # set __version__
 
 class SourceDistHook(sdist):
 
     def run(self):
         with open('version.rst', 'w') as f:
-            f.write(':Version: %s\n' % VERSION)
+            f.write(':Version: %s\n' % __version__)
         shutil.copy('README.rst', 'README')
         subprocess.call(['rst2man', 'git-change.rst', 'git-change.1'])
         sdist.run(self)
@@ -52,7 +52,7 @@ class CleanHook(clean):
 
 setup(
     name='git-change',
-    version=VERSION,
+    version=__version__,
     description='Git command to create and manage Gerrit Code Review changes',
     long_description=open('README.rst').read(),
     author='Jacob Hesch',

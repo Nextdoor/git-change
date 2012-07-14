@@ -24,7 +24,6 @@ See git-change(1) for full documentation.
 """
 
 __author__ = 'jacob@nextdoor.com (Jacob Hesch)'
-__version__ = '0.1.0'  # http://semver.org/
 
 import sys
 import time
