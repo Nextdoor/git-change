@@ -284,6 +284,11 @@ def search_gerrit(query):
         if not line:
             continue
         result = simplejson.loads(line)
+        # Encode unicode value strings as ASCII. Otherwise the
+        # subprocess module has trouble with embedded NULL bytes.
+        for k, v in result.iteritems():
+            if hasattr(v, 'encode'):
+                result[k] = v.encode('ascii')
         if 'type' in result and result['type'] == 'stats':
             stats = result
         else:

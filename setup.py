@@ -74,13 +74,14 @@ setup(
     install_requires=[
         'python-gflags',
         'setuptools',
+        'simplejson',
     ],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Topic :: Software Development',
         'License :: OSI Approved :: Apache Software License',
         'Intended Audience :: Developers',
-        'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
         'Operating System :: POSIX',
         'Natural Language :: English',
     ],
