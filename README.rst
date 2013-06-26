@@ -36,7 +36,7 @@ To install, run ::
     pip install git-change
 
 You can also download the latest release directly from the `Python
-Package Index`_ or clone the `GitHub repository`_ and install with
+Package Index`_ or clone the `GitHub mirror`_ and install with
 ``python setup.py install``.
 
 
@@ -218,8 +218,21 @@ Please report bugs on the GitHub `issues page`_.
 Contributing
 ------------
 
-To contribute, clone the `GitHub repository`_ and initiate a pull
-request with your changes.
+`Git-change` is self-hosting; to contribute, first install
+`git-change`. Visit `Gerrit repository`_ to register for an account
+and upload your SSH key. See `Gerrit Uploading Changes`_ for more
+detailed instructions.
+
+Then clone and configure the Gerrit repository, make your changes, and
+finally use `git-change` to send a code review with your changes to
+the `git-change` team: ::
+
+    git clone ssh://<sshusername>@review.opensource.nextdoor.com:29418/git-change.git
+    cd git-change
+    etc/configure-repository.sh
+    <make changes>
+    git add .
+    git change create
 
 
 See also
@@ -231,8 +244,11 @@ The folks at OpenStack_ maintain a similar tool called `git-review`_.
 .. _Gerrit Code Review: http://code.google.com/p/gerrit/
 .. _Python Package Index: http://pypi.python.org/pypi/git-change
 .. _issues page: https://github.com/Nextdoor/git-change/issues
-.. _GitHub repository: https://github.com/Nextdoor/git-change
+.. _GitHub mirror: https://github.com/Nextdoor/git-change
 .. _virtualenv: http://www.virtualenv.org/
 .. _OpenStack: http://openstack.org/
 .. _git-review: https://github.com/openstack-ci/git-review
 .. _Nextdoor: http://www.nextdoor.com/
+.. _Gerrit repository: https://review.opensource.nextdoor.com/
+.. _Gerrit Uploading Changes:
+   https://review.opensource.nextdoor.com/Documentation/user-upload.html
