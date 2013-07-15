@@ -71,6 +71,18 @@ gflags.DEFINE_bool('fake-push', False,
 
 FLAGS = gflags.FLAGS
 
+BRANCH_SHORT_LENGTH = 7
+
+BASH_COLORS = {
+    'YELLOW': '\033[93m',
+    'GRAY': '\033[30m',
+    'CLEAR': '\033[0m'
+}
+COLOR_CURRENT = BASH_COLORS['YELLOW']  # Current git-change branch.
+COLOR_OBSOLETE = BASH_COLORS['GRAY']  # Change branch that has been merged to master.
+COLOR_CLEAR = BASH_COLORS['CLEAR']  # Reset color to terminal default.
+
+
 
 def usage(include_flags=True):
     """Prints a usage message.
@@ -637,12 +649,37 @@ def list_change_branches():
     if not branches:
         print 'You have no change branches to list'
         return
+
+    not_merged_branches = git.run_command('git branch --no-merged',
+                                          trap_stdout=True).strip().split('\n')
+    not_merged_branches = [line.strip()[BRANCH_SHORT_LENGTH:] for line in not_merged_branches]
+
     print 'Change branches:\n'
     i = 0
     for branch in branches:
         i += 1
+
         output = git.run_command('git log --oneline -1 %s --' % branch, trap_stdout=True)
-        sys.stdout.write('{0:>2}. {1} {2}'.format(i, branch, output))
+        change_id = output.split(' ')[0]
+        description = ' '.join(output.split(' ')[1:])
+        short_branch = branch[0:16]
+        change_branch = branch.split('-')[1]
+
+        # handle colors here
+        use_color = git.get_config_option('git-change.color')
+        use_color = (use_color != 'false')  # auto or yes or anything else count as True
+
+        cid_url = git.get_config_option('git-change.cid-url') or ''
+
+        if use_color and change_branch not in not_merged_branches:  # not not == is merged
+            sys.stdout.write(COLOR_OBSOLETE)
+
+        if use_color and change_branch == get_change_id_from_branch():
+            sys.stdout.write(COLOR_CURRENT)
+        sys.stdout.write('{i:>2}: {branch_id} {href}{cid} {name}'.format(
+            i=i, branch_id=short_branch, href=cid_url, cid=change_id, name=description))
+        if use_color:
+            sys.stdout.write(COLOR_CLEAR)
     try:
         selection = raw_input('\nSelect a branch number to check out, '
                               'or hit enter to exit: ')

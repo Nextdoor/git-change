@@ -182,6 +182,29 @@ OPTIONS
             option if it is set. Required unless the config
             option is set.
 
+CONFIGURATION
+=============
+
+color=<when>
+            Color-code change branches based on their status. Status is one
+            of 'Normal', 'Merged', or 'Current'. Defaults to 'auto'.
+            Set 'false' to disable.
+
+change-id-url=<host>
+            When specified, the change id during the listing is preceded with
+            a custom url. Example: cid-url=http://github/user/repo/
+
+gerrit-ssh-host=<host>
+            Name of the Gerrit server hosting the Git repository.
+            Defaults to the `git-change.gerrit-host` Git config
+            option if it is set. Required unless the config
+            option is set.
+
+remote=<remote>
+            Name of the remote repository to fetch from and push to.
+            Defaults to the `git-change.remote` Git config option if
+            it is set, otherwise 'origin'.
+
 
 SEE ALSO
 ========
