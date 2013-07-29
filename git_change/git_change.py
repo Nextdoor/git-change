@@ -197,16 +197,23 @@ def check_unmerged_commits(branch):
         remote branch. False if not, or if the user elected to proceed
         anyway.
     """
-    output = git.run_command('git log --oneline %s ^%s/%s --' % (branch, FLAGS.remote, branch),
-                             trap_stdout=True)
+    # Gather output of git log.
+    output = git.run_command('git log --oneline %s ^%s/%s --' % (
+        branch, FLAGS.remote, branch), trap_stdout=True).strip()
+
+    # Count how many commits ahead we are vs. origin:
+    commits_ahead = int(git.run_command('git rev-list %s ^%s/%s --count' % (
+        branch, FLAGS.remote, branch), trap_stdout=True).strip())
+
     if not output or FLAGS['dry-run'].value:
         return False
 
-    print 'Your branch %s is ahead of its remote by the following %s commit(s):\n' % (
-        branch, len(output.split('\n')))
+    print 'Your branch %s is ahead of its remote by the following %i commit%s:\n' % (
+        branch, commits_ahead, 's' if commits_ahead > 1 else '')
+
     sys.stdout.write(output)
     user_input = raw_input(
-        '\nIf we continue, each of the commits above may result in a new code\n'
+        '\n\nIf we continue, each of the commits above may result in a new code\n'
         'review and a submit dependency in Gerrit. You might try syncing the\n'
         'remote branch by passing the --fetch flag.\n'
         'Continue? ')
