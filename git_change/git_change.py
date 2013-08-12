@@ -503,6 +503,17 @@ def create_change():
         git.run_command('git branch -m %s %s' % (tmp_branch, new_branch))
     print '\nCreated branch: %s\n' % new_branch
 
+    # Cache change meta-data in a note. With --chain, Parent-Branch is
+    # the temporary change branch that is the base of the
+    # chain. Without --chain, Parent-Branch and Taget-Branch are the
+    # same.
+    note = {
+        'Change-Id': change_id,
+        'Target-Branch': target_branch,
+        'Parent-Branch': original_branch,
+        }
+    git.write_note(note)
+
     command = build_push_command(target_branch)
     try:
         git.run_command(command)
@@ -669,10 +680,23 @@ def print_push_command():
     print build_push_command(target_branch)
 
 
-def main(argv):
-    if FLAGS['help-summary'].value:
-        usage(include_flags=False)
-        sys.exit()
+def configure():
+    """Configures git-change.
+
+    Verifies that required configuration options are in place and
+    merges command-line flags with config options.
+    """
+    # Make sure the notes.rewriteRef config option contains the
+    # git-change notes ref so that external commands that rewrite
+    # commits (e.g. git-commit --amend) copy notes to the rewritten
+    # commits.
+    rewrite_ref = git.get_config_option('notes.rewriteRef')
+    if not rewrite_ref:
+        rewrite_ref = git.NOTES_REF
+        git.set_config_option('notes.rewriteRef', rewrite_ref)
+    elif not git.NOTES_REF in rewrite_ref:
+        rewrite_ref = '%s:%s' % (rewrite_ref, git.NOTES_REF)
+        git.set_config_option('notes.rewriteRef', rewrite_ref)
 
     # Get remote from command-line flag or config option, otherwise
     # fall back to flag default.
@@ -694,8 +718,16 @@ def main(argv):
     if FLAGS['merge-commit'].value:
         FLAGS['use-head-commit'].value = True
 
+
+def main(argv):
+    if FLAGS['help-summary'].value:
+        usage(include_flags=False)
+        sys.exit()
+
     # Fail gracefully if run outside a git repository.
     git.run_command_or_die('git status')
+
+    configure()
 
     argc = len(argv)
     if argc > 2:

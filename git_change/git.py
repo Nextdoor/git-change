@@ -38,6 +38,8 @@ gflags.DEFINE_bool('dry-run', False, 'Echo commands but do not execute them.', s
 
 FLAGS = gflags.FLAGS
 
+NOTES_REF = 'refs/notes/git-change'
+
 
 class Error(Exception):
     """Base exception type."""
@@ -208,7 +210,7 @@ def run_command_shell(command, env=None):
 
 
 def get_config_option(name):
-    """Returns the config value identified by name.
+    """Returns the config option value identified by name.
 
     Args:
         name: A string representing the desired config option.
@@ -222,6 +224,21 @@ def get_config_option(name):
                            trap_stdout=True, output_on_error=False).strip()
     except CalledProcessError:
         return None
+
+
+def set_config_option(name, value):
+    """Sets the config option identified by name to value.
+
+    Args:
+        name: A string representing the desired config option.
+        value: A string representing the desired config value.
+
+    Raises:
+        CalledProcessError: The git-config command returned a non-zero
+            exit status.
+    """
+    return run_command('git config %s %s' % (name, value),
+                       trap_stdout=True, output_on_error=False).strip()
 
 
 def get_current_branch():
@@ -294,3 +311,51 @@ def search_gerrit(query):
         else:
             results.append(result)
     return results, stats
+
+
+def write_note(data, commit='HEAD'):
+    """Writes the given data to a Git note.
+
+    Args:
+        data: A dictionary mapping change meta-data keys to
+            corresponding values. Each key-value pair will be stored
+            in a Git note line. Change meta-data can be retrieved via
+            read_note().
+        commit: A string representing the commit to which to attach
+            the note.
+
+    Raises:
+        CalledProcessError: The git-notes command returned a non-zero
+            exit status.
+    """
+    command = 'git notes --ref=%s add ' % NOTES_REF
+    for k, v in data.iteritems():
+        command = '%s -m "%s: %s"' % (command, k, v)
+    run_command(command)
+
+
+def read_note(commit='HEAD'):
+    """Reads and returns data from a Git note.
+
+    Args:
+        commit: A string representing the commit from which to read
+            the note.
+
+    Returns:
+        A dictionary mapping change meta-data keys to corresponding
+        values. Returns an empty dictionary if there was an error
+        reading the note.
+    """
+    try:
+        output, _ = run_command('git notes --ref=%s show' % NOTES_REF,
+                                trap_stdout=True, trap_stderr=True,
+                                output_on_error=False)
+    except CalledProcessError:
+        return {}
+
+    data = {}
+    for line in output.split('\n'):
+        if line:
+            k, v = line.split(': ', 1)
+            data[k] = v
+    return data
