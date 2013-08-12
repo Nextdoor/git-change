@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utilities to support git subcommands."""
+"""Utilities to support Git subcommands."""
 
 __author__ = 'jacob@nextdoor.com (Jacob Hesch)'
 
@@ -224,7 +224,7 @@ def get_config_option(name):
         return None
 
 
-def get_branch():
+def get_current_branch():
     """Returns the current git branch name.
 
     Returns:
