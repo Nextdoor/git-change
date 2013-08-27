@@ -386,6 +386,33 @@ def sanity_check_merge_commit():
             sys.exit(1)
 
 
+def get_target_branch(commit='HEAD'):
+    """Returns the Git-change target branch of the given commit.
+
+    The target branch is read from the given commit's note. If the
+    target branch is not available from the note, an attempt is made
+    to read the Change-Id header from the given commit's message,
+    which is then used to fetch the target branch from Gerrit.
+
+    Args:
+        commit: A string representing the commit whose target branch
+            is desired.
+
+    Returns:
+        A string representing the name of the target branch if
+        available, otherwise None.
+    """
+    note_data = git.read_note(commit)
+    target_branch = note_data.get('Target-Branch', None)
+    if target_branch is None:
+        change_id = get_change_id_from_commit(commit)
+        if change_id is None:
+            return None
+        change = get_change(change_id)
+        target_branch = change['branch']
+    return target_branch
+
+
 def determine_branches():
     """Determines the current and target branches.
 
@@ -405,11 +432,9 @@ def determine_branches():
     current_branch = git.get_current_branch()
     if FLAGS.chain:
         # Extract the target branch from the current change branch.
-        current_change_id = get_change_id_from_branch()
-        if current_change_id is None:
+        target_branch = get_target_branch()
+        if target_branch is None:
             exit_error('The current branch must be a change branch when you specify --chain.')
-        current_change = get_change(current_change_id)
-        target_branch = current_change['branch']
     else:
         if current_branch.startswith('change-I'):
             exit_error('You are in a temporary change branch. '
@@ -559,9 +584,8 @@ def rebase():
     If there are conflicts with either rebase operation, the process
     terminates and it is up to the user to resolve the conflicts.
     """
-    change_id = check_for_change_branch()
-    change = get_change(change_id)
-    target_branch = change['branch']
+    check_for_change_branch()
+    target_branch = get_target_branch()
     change_branch = git.get_current_branch()
 
     git.run_command_or_die('git checkout %s' % target_branch)
