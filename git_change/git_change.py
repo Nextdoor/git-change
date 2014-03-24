@@ -31,12 +31,14 @@ import time
 import gflags
 
 import git
+import git_owners
 
 # Used mainly to provide a usage summary with -h, consistent with
 # other git commands.
 gflags.DEFINE_bool('help-summary', False, 'Show a short usage message and exit.', short_name='h')
 
 gflags.DEFINE_list('reviewers', list(), 'Comma-separated list of reviewers.', short_name='r')
+gflags.DEFINE_bool('ignore-owners', False, 'Set to ignore OWNERS files for this particular change.')
 gflags.DEFINE_list('cc', list(),
                    'Comma-separated list of addresses to copy on change notification mails.')
 gflags.DEFINE_string('bug', None, 'Bug ID to include in the commit message header', short_name='b')
@@ -97,11 +99,12 @@ def usage(include_flags=True):
                '   or: git change submit\n'
                '   or: git change gc\n'
                '\n'
-               '<create-options>: [-r|--reviewers=] [--cc=] [-b|--bug=] [-m|--message=] '
-               '[--topic=] [--fetch] [--switch] [--chain] '
+               '<create-options>: [-r|--reviewers=] [--ignore-owners=] [--cc=] [-b|--bug=] '
+               '[-m|--message=] [--topic=] [--fetch] [--switch] [--chain] '
                '[--use-head-commit] [--merge-commit] [--skip=]\n'
                '\n'
-               '<update-options>[-r|--reviewers=] [--cc=] [-b|--bug=] [--skip=]\n'
+               '<update-options>[-r|--reviewers=] [--ignore-owners=] [--cc=] '
+               ' [-b|--bug=] [--skip=]\n'
                '\n'
                'See git-change(1) for full documentation.')
     print message
@@ -116,7 +119,7 @@ def exit_error(message, prefix='Error: ', status=1):
         message: A string representing the error message to
             print. 'Error: ' will be prepended to message.
         prefix: A string to prepend to message
-        stautus: An integer representing the exit status code.
+        status: An integer representing the exit status code.
     """
     sys.stderr.write('%s%s\n' % (prefix, message))
     sys.exit(status)
@@ -175,6 +178,28 @@ def get_change_id_from_head():
     return get_change_id_from_commit('HEAD')
 
 
+def get_reviewers_for_change():
+    """Gets the reviewers for this change from command flag and OWNERS files.
+
+    Combines two sets of Gerrit reviewer usernames to create one set of
+    reviewers for this change:
+        1. Reviewer usernames passed in with the command line flag 'reviewers'.
+        2. Reviewer usernames listed in relevant OWNERS files, if the repo is
+            configured for OWNERS files and the commit author has not passed the
+            flag 'ignore-owners=True'. See the git_owners module for more
+            information about OWNERS files.
+
+    Returns:
+        A list of strings representing Gerrit Code Review usernames.
+    """
+    reviewers = set()
+    reviewers.update(FLAGS.reviewers)
+    if git.get_config_option('git-change.include-owners') == 'true' and not FLAGS['ignore-owners']:
+        reviewers.update(git_owners.get_change_owners())
+
+    return [r for r in reviewers if r]
+
+
 def build_push_command(branch):
     """Builds a git push command string for pushing a Gerrit change.
 
@@ -189,9 +214,9 @@ def build_push_command(branch):
     """
     command = 'git push %s' % FLAGS.remote
     receive_pack_args = []
-    for reviewer in FLAGS.reviewers:
-        if reviewer:  # trailing commas in flag value generate blank entries
-            receive_pack_args.append('--reviewer=%s' % reviewer)
+
+    for reviewer in get_reviewers_for_change():
+        receive_pack_args.append('--reviewer=%s' % reviewer)
     for cc in FLAGS.cc:
         if cc:  # trailing commas in flag value generate blank entries
             receive_pack_args.append('--cc=%s' % cc)
@@ -321,7 +346,6 @@ def update_change():
     # we have a new patch set.
     if (FLAGS.reviewers or FLAGS.cc or FLAGS.bug is not None or
         git.run_command('git diff --cached --name-status', trap_stdout=True)):
-
         commit_change(['--amend'])
 
     command = build_push_command(change['branch'])
@@ -533,7 +557,7 @@ def create_change():
         print ('\nWARNING: Reading change ID from the HEAD commit failed. (You may need to\n'
                'install the Gerrit commit-msg hook.) Before continuing, you need to add\n'
                'the change ID header to the HEAD commit message (git commit --amend) and\n'
-               'rename the branch %s to change-<change-ID> manaully.' % tmp_branch)
+               'rename the branch %s to change-<change-ID> manually.' % tmp_branch)
         new_branch = tmp_branch
     else:
         new_branch = 'change-%s' % change_id
