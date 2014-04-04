@@ -66,7 +66,8 @@ def get_directories_with_changes():
     changed_files = git.run_command(changed_files_cmd, trap_stdout=True).split('\n')[:-1]
 
     # Return the absolute paths to their parent directories, removing duplicates.
-    abs_dir_paths = [os.path.dirname(os.path.abspath(path)) for path in changed_files]
+    repo_root = _get_repo_root()
+    abs_dir_paths = [os.path.dirname(os.path.join(repo_root, path)) for path in changed_files]
     return list(set(abs_dir_paths))
 
 

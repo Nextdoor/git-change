@@ -194,7 +194,10 @@ def get_reviewers_for_change():
     """
     reviewers = set()
     reviewers.update(FLAGS.reviewers)
-    if git.get_config_option('git-change.include-owners') == 'true' and not FLAGS['ignore-owners']:
+
+    repo_configured_for_owners = git.get_config_option('git-change.include-owners') == 'true'
+    ignore_owners_flag = FLAGS['ignore-owners'].value
+    if repo_configured_for_owners and not ignore_owners_flag:
         reviewers.update(git_owners.get_change_owners())
 
     return [r for r in reviewers if r]
