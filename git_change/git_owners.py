@@ -57,18 +57,17 @@ def get_directories_with_changes():
     """Gets the absolute paths to the parent directories of changed files.
 
     Returns:
-        A list of strings representing the absolute paths to directories with
-        changed files in the last commit, with no duplicates.
+        A list of strings representing the absolute paths to directories of
+        files changed in the last commit.
     """
     # Get a list of changed files in the HEAD commit.
-    head_commit = git.run_command('git rev-parse HEAD', trap_stdout=True).strip()
-    changed_files_cmd = 'git diff-tree --no-commit-id --name-only -r %s' % head_commit
-    changed_files = git.run_command(changed_files_cmd, trap_stdout=True).split('\n')[:-1]
+    changed_files = git.run_command(
+        'git diff --name-only HEAD^ HEAD', trap_stdout=True).split('\n')[:-1]
 
-    # Return the absolute paths to their parent directories, removing duplicates.
+    # Return absolute paths to the parent dirs of changed files.
     repo_root = _get_repo_root()
-    abs_dir_paths = [os.path.dirname(os.path.join(repo_root, path)) for path in changed_files]
-    return list(set(abs_dir_paths))
+    dir_paths = [os.path.dirname(os.path.join(repo_root, path)) for path in changed_files]
+    return list(set(dir_paths))
 
 
 def get_owners_for_dir(dir_path):
@@ -81,20 +80,21 @@ def get_owners_for_dir(dir_path):
         dir_path: A string representing the absolute path to a directory.
 
     Returns:
-        A list of strings, representing Gerrit usernames, with no duplicate
-        strings.
+        A list of strings representing Gerrit usernames.
     """
-    # Return the explicit owners of this directory if they exist.
-    for file in os.listdir(dir_path):
-        file_path = os.path.join(dir_path, file)
-        if _is_owners_file(file_path):
-            return [line.strip() for line in open(file_path, 'r')]
-
-    # Otherwise recurse up the file tree to find this directory's owners.
-    if dir_path == _get_repo_root():
+    # If we have recursed past the top of the repo, there are no owners.
+    if dir_path == os.path.dirname(_get_repo_root()):
         return []
-    else:
-        return get_owners_for_dir(os.path.dirname(dir_path))
+
+    # If this directory exists, attempt to find it's explicit owners.
+    if os.path.exists(dir_path):
+        for file in os.listdir(dir_path):
+            file_path = os.path.join(dir_path, file)
+            if _is_owners_file(file_path):
+                return [line.strip() for line in open(file_path, 'r')]
+
+    # Otherwise, recurse up the tree to find the owners for this directory.
+    return get_owners_for_dir(os.path.dirname(dir_path))
 
 
 def _is_owners_file(path):
