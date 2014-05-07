@@ -39,7 +39,7 @@ the temporary change branches this command creates.
 USAGE
 =====
 
-create [-r|--reviewers=] [--cc=] [-b|--bug=] [-m|--message=] [--topic=] [--skip=] [--fetch] [--switch] [--chain] [--use-head-commit] [--merge-commit]
+create [-r|--reviewers=] [--cc=] [-b|--bug=] [-m|--message=] [--topic=] [--skip=] [--fetch] [--switch] [--chain] [--use-head-commit] [--merge-commit] [--ignore-owners]
 
     Create a new change and upload to Gerrit. Creating a change is the
     default operation, so omitting the subcommand causes `git-change`
@@ -72,7 +72,7 @@ create [-r|--reviewers=] [--cc=] [-b|--bug=] [-m|--message=] [--topic=] [--skip=
     since the epoch. In this case the change branch must be manually
     deleted and the change creation must be retried.
 
-update [-r|--reviewers=] [--cc=] [-b|--bug=] [--skip=]
+update [-r|--reviewers=] [--cc=] [-b|--bug=] [--skip=] [--ignore-owners]
 
     Update the existing Gerrit change with new changes. Staged changes
     will be automatically committed by amending the HEAD commit. The
@@ -119,6 +119,13 @@ OPTIONS
 
 -r <addresses>, --reviewers=<addresses>
             Comma-separated list of reviewers.
+
+--ignore-owners
+            Boolean indictating whether to ignore the owners listed in
+            OWNERS files when uploading a change branch. This is false
+            by default. However, if the `include-owners` git config is
+            not set, owners are always ignored, reguardless of this
+            flag.
 
 --cc=<addresses>
             Comma-separated list of addresses to copy on change notification
@@ -204,6 +211,11 @@ remote=<remote>
             Name of the remote repository to fetch from and push to.
             Defaults to the `git-change.remote` Git config option if
             it is set, otherwise 'origin'.
+
+include-owners=<boolean>
+            Whether or not the add OWNERS file support for this
+            repository. If this is not set, OWNERS files will be
+            ignored.
 
 
 SEE ALSO

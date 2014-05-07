@@ -67,6 +67,13 @@ details according to your system: ::
     git config git-change.remote <remote-name>
     git config git-change.gerrit-ssh-host <gerrit-ssh-host>
 
+As of version 0.2.0, `git-change` includes support for OWNERS files
+(see more information below). Add an entry if you want to turn on this
+feature: ::
+
+    git config git-change.include_owners true
+
+
 Install Git hooks
 ~~~~~~~~~~~~~~~~~
 
@@ -155,6 +162,67 @@ but you have old change branches created from the ``feature`` branch,
 you have to switch to ``feature`` before running ``git change gc`` in
 order to clear out those branches. Of course, you can also remove
 stale change branches "manually" with ``git branch -d <branch>``.
+
+
+``OWNERS`` files
+----------------
+
+``OWNERS`` files are plaintext files in your codebase containing Gerrit
+usernames specifying the "owners" of directories and their
+sub-directories recursively.
+
+If `git-change` support for ``OWNERS`` files is turned on (see the
+section on Setup), every time a Gerrit changeset is created or
+updated, `git-change` will attempt to read the relevant ``OWNERS``
+files and submit the change with the owners passed as Gerrit
+reviewers.
+
+For example, let's say you are listed as an owner of a directory and
+someone else submits a change to Gerrit that includes a change to a
+file in that directory: ::
+
+    git change create
+
+`Git-change` will read the ``OWNERS`` files relevant to the changeset
+and pass your username as a reviewer with the change. This means that
+from the perspective of Gerrit, the other programmer's command is
+effectively: ::
+
+    git change create --reviewers=your_username
+
+``OWNERS`` scope
+~~~~~~~~~~~~~~~~
+
+``OWNERS`` files have recursive scope. This means that if you are
+listed as a owner of a directory, you are implicitly listed as an
+owner of that directory's sub-directories recursively. However,
+``OWNERS`` files are overridden by ``OWNERS`` files in
+sub-directories.
+
+For example, in the case below, `a_file.py` and `a_file_test.py` are
+owned by the owners listed in ``OWNERS`` (A), but `configure_files.sh`
+is owned by the owners listed in ``OWNERS`` (B): ::
+
+    owners-example/
+    ├── a_file.py
+    ├── OWNERS       (A)
+    ├── scripts
+    │   ├── configure_files.sh
+    │   └── OWNERS   (B)
+    └── tests
+        └── a_file_test.py
+
+
+Creating ``OWNERS`` files
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``OWNERS`` files are plaintext files (named ``OWNERS`` in the
+filesystem) that list Gerrit usernames, one per line. ``OWNERS`` files
+can be added, edited and tracked with git like any other file: ::
+
+    $ cat owners-example/OWNERS
+    ayra
+    tyrion
 
 
 Documentation
