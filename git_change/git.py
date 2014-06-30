@@ -253,7 +253,7 @@ def get_current_branch():
     if FLAGS['dry-run'].value:
         return 'fake-branch'
     output = run_command('git symbolic-ref HEAD', trap_stdout=True)
-    parts = output.split('/')
+    parts = output.split('/', 2)
     if len(parts) == 3:
         return parts[2].strip()
     else:
