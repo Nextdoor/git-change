@@ -736,6 +736,10 @@ def submit_change():
 
 def garbage_collect():
     """Removes temporary change branches which are fully merged."""
+    current_branch = git.get_current_branch()
+    if current_branch.startswith('change-I'):
+        exit_error('`git-change gc` cannot be run from a change branch.')
+
     unmerged_branches = []
     deleted = False
     for branch in get_change_branches():
