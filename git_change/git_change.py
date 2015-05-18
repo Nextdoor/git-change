@@ -98,7 +98,6 @@ def usage(include_flags=True):
                '   or: git change list\n'
                '   or: git change submit\n'
                '   or: git change gc\n'
-               '   or: git change clean\n'
                '\n'
                '<create-options>: [-r|--reviewers=] [--ignore-owners=] [--cc=] [-b|--bug=] '
                '[-m|--message=] [--topic=] [--fetch] [--switch] [--chain] '
@@ -735,7 +734,7 @@ def submit_change():
                            (FLAGS['gerrit-ssh-host'].value, project, commit))
 
 
-def garbage_collect(force=False):
+def garbage_collect():
     """Removes temporary change branches which are fully merged."""
     current_branch = git.get_current_branch()
     if current_branch.startswith('change-I'):
@@ -745,11 +744,8 @@ def garbage_collect(force=False):
     deleted = False
     for branch in get_change_branches():
         try:
-            if force:
-                git.run_command('git branch -D %s' % branch, trap_stderr=True, output_on_error=False)
-            else:
-                # Note: git branch -d prints 'Deleted branch ...' to stdout.
-                git.run_command('git branch -d %s' % branch, trap_stderr=True, output_on_error=False)
+            # Note: git branch -d prints 'Deleted branch ...' to stdout.
+            git.run_command('git branch -d %s' % branch, trap_stderr=True, output_on_error=False)
         except git.CalledProcessError:
             unmerged_branches.append(branch)
         else:
@@ -846,8 +842,6 @@ def main(argv):
         submit_change()
     elif subcommand == 'gc':
         garbage_collect()
-    elif subcommand == 'clean':
-        garbage_collect(force=True)
     elif subcommand == 'print':
         print_push_command()
     else:
