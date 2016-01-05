@@ -2,7 +2,11 @@
  git-change
 ============
 
-`Git-change` is a Git command which creates and manages changes for
+Disclaimer: `git-change` is no longer in development. Use it at your own risk.
+------------
+
+
+`git-change` is a Git command which creates and manages changes for
 the `Gerrit Code Review`_ tool.
 
 The goal of `git-change` is to simplify the interface for creating and
